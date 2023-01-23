@@ -7,17 +7,23 @@
 using namespace fakeit;
 
 #define RESPONSE_BUFFER_SIZE 100
+
+extern BC95 *driverUnderTest;
+extern MockSerial *mockSerial;
+extern MockClock *mockClock;
+extern const int reset_pin;
+extern const unsigned long timeout_ms;
+extern const unsigned long initTime;
+extern const unsigned long timeStep;
 namespace BC95Test
 {
     void test_BC95_SetsResetPinToOutputAndLowAfterBegin(void)
     {
-        Stream *stream = ArduinoFakeMock(Stream);
-        const int reset_pin = 23;
-        BC95 modem(stream, reset_pin);
         When(Method(ArduinoFake(), pinMode)).AlwaysReturn();
         When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+        Stream *stream = ArduinoFakeMock(Stream);
 
-        modem.begin();
+        driverUnderTest->begin();
 
         Verify(Method(ArduinoFake(), pinMode).Using(reset_pin, OUTPUT)).Once();
         Verify(Method(ArduinoFake(), digitalWrite).Using(reset_pin, LOW)).Once();
@@ -25,71 +31,52 @@ namespace BC95Test
 
     void test_BC95_AppendsCarriageReturnOnATCommand(void)
     {
-        Stream *stream = ArduinoFakeMock(Stream);
-        const int reset_pin = 23;
-        BC95 modem(stream, reset_pin);
+        mockSerial->begin();
 
-        MockSerial mock_serial;
-        mock_serial.begin();
+        driverUnderTest->sendCMD("OK");
 
-        modem.sendCMD("OK");
-
-        TEST_ASSERT_EQUAL_STRING("OK\r", mock_serial.getTxBuffer().c_str());
+        TEST_ASSERT_EQUAL_STRING("OK\r", mockSerial->getTxBuffer().c_str());
     }
 
     void test_BC95_WaitForModemResponseAndReceiveImmediately()
     {
-        Stream *stream = ArduinoFakeMock(Stream);
-        MockSerial mock_serial;
-        mock_serial.begin();
-        mock_serial.setRxBuffer("OK");
-        MockClock mock_clock(0, 1);
-        mock_clock.begin();
+        const char expected[] = "OK";
+        mockSerial->begin();
+        mockClock->begin();
+        mockSerial->setRxBuffer(expected);
 
-        const int reset_pin = 23;
-        const unsigned long timeout_ms = 300;
         String buffer;
-        BC95 modem(stream, reset_pin);
-        int status = modem.waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING("OK", buffer.c_str());
+        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
     }
 
     void test_BC95_WaitForValidResponseThatContainsOk(void)
     {
-        Stream *stream = ArduinoFakeMock(Stream);
-        MockSerial mock_serial;
-        MockClock mock_clock(0, 1);
-        mock_serial.begin();
-        mock_clock.begin();
-        mock_serial.setRxBuffer("\r\nAT\r\n\r\nOK\r\n");
+        const char expected[] = "\r\nAT\r\n\r\nOK\r\n";
+        mockSerial->begin();
+        mockClock->begin();
+        mockSerial->setRxBuffer(expected);
 
-        const int reset_pin = 23;
-        const unsigned long timeout_ms = 300;
         String buffer;
-        BC95 modem(stream, reset_pin);
-        int status = modem.waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING("\r\nAT\r\n\r\nOK\r\n", buffer.c_str());
+        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
         TEST_ASSERT_EQUAL(CommandSucess, status);
     }
 
     void test_BC95_WaitForModemResponseButTimeOutOccurs()
     {
-        Stream *stream = ArduinoFakeMock(Stream);
-        MockSerial mock_serial;
-        MockClock mock_clock(0, 1);
-        mock_serial.begin();
-        mock_clock.begin();
-        mock_serial.setRxBuffer("");
+        const char expected[] = "";
+        mockSerial->begin();
+        mockClock->begin();
+        mockSerial->setRxBuffer(expected);
 
-        const int reset_pin = 23;
-        const unsigned long timeout_ms = 300;
         String buffer;
-        BC95 modem(stream, reset_pin);
-        int status = modem.waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING("", buffer.c_str());
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+
+        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
         TEST_ASSERT_EQUAL(TimeoutError, status);
     }
 
