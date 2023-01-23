@@ -24,6 +24,15 @@ public:
                       { 
                       _txBuffer += String(str) ;
                       return strlen(str); });
+        When(Method(ArduinoFake(Stream), read))
+            .AlwaysDo([this]() -> char
+                      {
+                char byte = _rxBuffer.charAt(0);
+                _rxBuffer.remove(0, 1);
+                return byte; });
+        When(Method(ArduinoFake(Stream), available))
+            .AlwaysDo([this]() -> int
+                      { return _rxBuffer.length(); });
     }
     String getTxBuffer(void)
     {

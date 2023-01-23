@@ -72,6 +72,33 @@ namespace MockSerialTest
 
         TEST_ASSERT_EQUAL_STRING("OK", mock_serial.getRxBuffer().c_str());
     }
+    void test_MockSerial_ReducesRxBufferSizeByOneEverytimeStreamReadIsCalled(void)
+    {
+        MockSerial mock_serial;
+        Stream *stream = ArduinoFakeMock(Stream);
+        mock_serial.setRxBuffer("data");
+        mock_serial.begin();
+        TEST_ASSERT_EQUAL_CHAR('d', stream->read());
+        TEST_ASSERT_EQUAL(3, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL_CHAR('a', stream->read());
+        TEST_ASSERT_EQUAL(2, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL_CHAR('t', stream->read());
+        TEST_ASSERT_EQUAL(1, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL_CHAR('a', stream->read());
+        TEST_ASSERT_EQUAL(0, mock_serial.getRxBuffer().length());
+    }
+
+    void test_MockSerial_ReturnsRxBufferSizeWhenSerialAvailableIsCalled()
+    {
+        MockSerial mock_serial;
+        Stream *stream = ArduinoFakeMock(Stream);
+        mock_serial.begin();
+        TEST_ASSERT_EQUAL(0, stream->available());
+        mock_serial.setRxBuffer("OK");
+        TEST_ASSERT_EQUAL(2, stream->available());
+        mock_serial.setRxBuffer("Hello");
+        TEST_ASSERT_EQUAL(5, stream->available());
+    }
     void run_tests(void)
     {
         RUN_TEST(test_MockSerial_ClearTxBufferAfterCreate);
@@ -79,5 +106,7 @@ namespace MockSerialTest
         RUN_TEST(test_MockSerial_AppendsStringInBufferIfPrintedConsecutively);
         RUN_TEST(test_MockSerial_CleanRxBufferEmptyIfNotSet);
         RUN_TEST(test_MockSerial_SetRxBufferToGivenData);
+        RUN_TEST(test_MockSerial_ReducesRxBufferSizeByOneEverytimeStreamReadIsCalled);
+        RUN_TEST(test_MockSerial_ReturnsRxBufferSizeWhenSerialAvailableIsCalled);
     }
 }
