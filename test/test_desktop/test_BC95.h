@@ -94,6 +94,18 @@ namespace BC95Test
         TEST_ASSERT_EQUAL(InvalidCmdError, status);
     }
 
+    void test_BC95_ReceivesUnknownError()
+    {
+        const char expected[] = "\r\n234resfdsdfsfew\r\n";
+        prvExpectResponse(expected);
+
+        String buffer;
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+
+        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
+        TEST_ASSERT_EQUAL(UnknownError, status);
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
@@ -102,5 +114,6 @@ namespace BC95Test
         RUN_TEST(test_BC95_ReceivesValidResponse);
         RUN_TEST(test_BC95_ReceivesTimeOutError);
         RUN_TEST(test_BC95_ReceivesInvalidCmdError);
+        RUN_TEST(test_BC95_ReceivesUnknownError);
     }
 }
