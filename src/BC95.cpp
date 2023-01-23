@@ -35,7 +35,10 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
     }
     if (buffer.length() == 0)
         return TimeoutError;
-    if (buffer.lastIndexOf("OK") == -1)
+    else if (buffer.lastIndexOf("ERROR") != -1)
+        return InvalidCmdError;
+    else if (buffer.lastIndexOf("OK") != -1)
+        return CommandSucess;
+    else
         return UnknownError;
-    return CommandSucess;
 }

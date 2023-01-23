@@ -8,6 +8,7 @@ enum
     CommandSucess,
     TimeoutError,
     UnknownError,
+    InvalidCmdError
 };
 
 class BC95

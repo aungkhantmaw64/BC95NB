@@ -58,7 +58,7 @@ namespace BC95Test
         TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
     }
 
-    void test_BC95_WaitForValidResponseThatContainsOk(void)
+    void test_BC95_ReceivesValidResponse(void)
     {
         const char *expected = "\r\nAT\r\n\r\nOK\r\n";
         prvExpectResponse(expected);
@@ -70,7 +70,7 @@ namespace BC95Test
         TEST_ASSERT_EQUAL(CommandSucess, status);
     }
 
-    void test_BC95_WaitForModemResponseButTimeOutOccurs()
+    void test_BC95_ReceivesTimeOutError()
     {
         const char expected[] = "";
         prvExpectResponse(expected);
@@ -82,12 +82,25 @@ namespace BC95Test
         TEST_ASSERT_EQUAL(TimeoutError, status);
     }
 
+    void test_BC95_ReceivesInvalidCmdError()
+    {
+        const char expected[] = "\r\nERROR\r\n";
+        prvExpectResponse(expected);
+
+        String buffer;
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+
+        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
+        TEST_ASSERT_EQUAL(InvalidCmdError, status);
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
         RUN_TEST(test_BC95_AppendsCarriageReturnOnATCommand);
         RUN_TEST(test_BC95_WaitForModemResponseAndReceiveImmediately);
-        RUN_TEST(test_BC95_WaitForValidResponseThatContainsOk);
-        RUN_TEST(test_BC95_WaitForModemResponseButTimeOutOccurs);
+        RUN_TEST(test_BC95_ReceivesValidResponse);
+        RUN_TEST(test_BC95_ReceivesTimeOutError);
+        RUN_TEST(test_BC95_ReceivesInvalidCmdError);
     }
 }
