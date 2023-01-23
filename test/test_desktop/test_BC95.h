@@ -17,6 +17,13 @@ extern const unsigned long initTime;
 extern const unsigned long timeStep;
 namespace BC95Test
 {
+    void prvExpectResponse(const char *expected)
+    {
+        mockSerial->begin();
+        mockClock->begin();
+        mockSerial->setRxBuffer(expected);
+    }
+
     void test_BC95_SetsResetPinToOutputAndLowAfterBegin(void)
     {
         When(Method(ArduinoFake(), pinMode)).AlwaysReturn();
@@ -53,10 +60,8 @@ namespace BC95Test
 
     void test_BC95_WaitForValidResponseThatContainsOk(void)
     {
-        const char expected[] = "\r\nAT\r\n\r\nOK\r\n";
-        mockSerial->begin();
-        mockClock->begin();
-        mockSerial->setRxBuffer(expected);
+        const char *expected = "\r\nAT\r\n\r\nOK\r\n";
+        prvExpectResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
@@ -68,12 +73,9 @@ namespace BC95Test
     void test_BC95_WaitForModemResponseButTimeOutOccurs()
     {
         const char expected[] = "";
-        mockSerial->begin();
-        mockClock->begin();
-        mockSerial->setRxBuffer(expected);
+        prvExpectResponse(expected);
 
         String buffer;
-
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
         TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
