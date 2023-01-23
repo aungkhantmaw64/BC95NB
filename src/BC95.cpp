@@ -24,9 +24,18 @@ void BC95::sendCMD(const char *cmd)
 
 int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
 {
-    while (_stream->available() > 0)
+    unsigned long startTime = millis();
+    while ((millis() - startTime) < timeout_ms)
     {
-        char byte = _stream->read();
-        buffer += byte;
+        if (_stream->available() > 0)
+        {
+            char byte = _stream->read();
+            buffer += byte;
+        }
     }
+    if (buffer.length() == 0)
+        return TimeoutError;
+    if (buffer.lastIndexOf("OK") == -1)
+        return UnknownError;
+    return CommandSucess;
 }

@@ -5,7 +5,9 @@
 
 enum
 {
-    CommandSucess
+    CommandSucess,
+    TimeoutError,
+    UnknownError,
 };
 
 class BC95
