@@ -26,10 +26,12 @@ public:
                       return strlen(str); });
         When(Method(ArduinoFake(Stream), read))
             .AlwaysDo([this]() -> char
-                      {
-                char byte = _rxBuffer.charAt(0);
-                _rxBuffer.remove(0, 1);
-                return byte; });
+                      {if(_rxBuffer.length()>0){
+                            char byte = _rxBuffer.charAt(0);
+                            _rxBuffer.remove(0, 1);
+                            return byte;
+                            }
+                        return -1; });
         When(Method(ArduinoFake(Stream), available))
             .AlwaysDo([this]() -> int
                       { return _rxBuffer.length(); });
