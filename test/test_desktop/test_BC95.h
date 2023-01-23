@@ -5,6 +5,7 @@
 
 using namespace fakeit;
 
+#define RESPONSE_BUFFER_SIZE 100
 namespace BC95Test
 {
     void test_BC95_SetsResetPinToOutputAndLowAfterBegin(void)
@@ -34,6 +35,24 @@ namespace BC95Test
 
         TEST_ASSERT_EQUAL_STRING("OK\r", mock_serial.getTxBuffer().c_str());
     }
+
+    // void test_BC95_WaitForModemResponseAndReceiveSuccessStatusImmediately()
+    // {
+    //     Stream *stream = ArduinoFakeMock(Stream);
+    //     MockSerial mock_serial;
+    //     mock_serial.begin();
+    //     mock_serial.setRxBuffer("OK");
+
+    //     const int reset_pin = 23;
+    //     const unsigned long timeout_ms = 300;
+    //     char buffer[RESPONSE_BUFFER_SIZE];
+    //     BC95 modem(stream, reset_pin);
+    //     int status = modem.waitForResponse(timeout_ms, buffer);
+
+    //     TEST_ASSERT_EQUAL(CommandSuccess, status);
+    //     TEST_ASSERT_EQUAL_STRING("OK", buffer);
+    // }
+
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);

@@ -58,10 +58,21 @@ namespace MockSerialTest
         TEST_ASSERT_EQUAL_STRING("DATA", mock_serial.getTxBuffer().c_str());
     }
 
+    void test_MockSerial_CleanRxBufferEmptyIfNotSet(void)
+    {
+        MockSerial mock_serial;
+
+        TEST_ASSERT_EQUAL_STRING("", mock_serial.getRxBuffer().c_str());
+    }
+
+    void test_MockSerial_SetRxBufferToGivenData(void)
+    {
+    }
     void run_tests(void)
     {
         RUN_TEST(test_MockSerial_ClearTxBufferAfterCreate);
         RUN_TEST(test_MockSerial_PutsDataOnTxBufferAfterPrint);
         RUN_TEST(test_MockSerial_AppendsStringInBufferIfPrintedConsecutively);
+        RUN_TEST(test_MockSerial_CleanRxBufferEmptyIfNotSet);
     }
 }

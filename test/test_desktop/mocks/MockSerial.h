@@ -33,9 +33,14 @@ public:
     {
         _txBuffer = "";
     }
+    String getRxBuffer(void)
+    {
+        return _rxBuffer;
+    }
 
 private:
     String _txBuffer;
+    String _rxBuffer;
 };
 
 #endif
