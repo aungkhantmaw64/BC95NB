@@ -37,6 +37,10 @@ public:
     {
         return _rxBuffer;
     }
+    void setRxBuffer(const char *str)
+    {
+        _rxBuffer = String(str);
+    }
 
 private:
     String _txBuffer;
