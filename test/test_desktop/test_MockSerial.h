@@ -42,9 +42,26 @@ namespace MockSerialTest
 
         TEST_ASSERT_EQUAL_STRING("", mock_serial.getTxBuffer().c_str());
     }
+
+    void test_MockSerial_AppendsStringInBufferIfPrintedConsecutively(void)
+    {
+        MockSerial mock_serial;
+        Stream *stream = ArduinoFakeMock(Stream);
+        mock_serial.begin();
+        stream->print("D");
+        TEST_ASSERT_EQUAL_STRING("D", mock_serial.getTxBuffer().c_str());
+        stream->print("A");
+        TEST_ASSERT_EQUAL_STRING("DA", mock_serial.getTxBuffer().c_str());
+        stream->print("T");
+        TEST_ASSERT_EQUAL_STRING("DAT", mock_serial.getTxBuffer().c_str());
+        stream->print("A");
+        TEST_ASSERT_EQUAL_STRING("DATA", mock_serial.getTxBuffer().c_str());
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_MockSerial_ClearTxBufferAfterCreate);
         RUN_TEST(test_MockSerial_PutsDataOnTxBufferAfterPrint);
+        RUN_TEST(test_MockSerial_AppendsStringInBufferIfPrintedConsecutively);
     }
 }

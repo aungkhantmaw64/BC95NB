@@ -21,7 +21,8 @@ public:
     {
         When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)))
             .AlwaysDo([this](const char *str) -> int
-                      { _txBuffer = String(str);
+                      { 
+                      _txBuffer += String(str) ;
                       return strlen(str); });
     }
     String getTxBuffer(void)
