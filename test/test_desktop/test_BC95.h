@@ -79,28 +79,18 @@ namespace BC95Test
         Verify(Method(ArduinoFake(Stream), flush)).Once();
     }
 
-    void test_BC95_WaitForModemResponseAndReceiveImmediately()
-    {
-        const char expected[] = "OK";
-        mockSerial->begin();
-        mockClock->begin();
-        mockSerial->setRxBuffer(expected);
-
-        String buffer;
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
-
-        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
-    }
-
     void test_BC95_ReceivesValidResponse(void)
     {
         const char *expected = "\r\nAT\r\n\r\nOK\r\n";
-        prvExpectResponse(expected);
+        prvEnableMocks();
 
         String buffer;
+        driverUnderTest->send("AT");
+
+        mockSerial->setRxBuffer(expected);
+
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
         TEST_ASSERT_EQUAL(CommandSucess, status);
     }
 
@@ -112,7 +102,6 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
         TEST_ASSERT_EQUAL(TimeoutError, status);
     }
 
@@ -124,7 +113,6 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
         TEST_ASSERT_EQUAL(InvalidCmdError, status);
     }
 
@@ -136,8 +124,20 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
         TEST_ASSERT_EQUAL(Unknown, status);
+    }
+
+    void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
+    {
+        const char original[] = "\r\nAT\n\nOK\r\n";
+        prvExpectResponse(original);
+
+        String buffer;
+        driverUnderTest->send("AT");
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+
+        TEST_ASSERT_EQUAL(CommandSucess, status);
+        TEST_ASSERT_EQUAL_STRING("OK", buffer.c_str());
     }
 
     void run_tests(void)
@@ -147,10 +147,10 @@ namespace BC95Test
         RUN_TEST(test_BC95_SendsStringTypeATCommand);
         RUN_TEST(test_BC95_SendsCmdOnlyAfterWaitingForTwentyMilliseconds);
         RUN_TEST(test_BC95_FlushChannelBeforeSendingANewCommmand);
-        RUN_TEST(test_BC95_WaitForModemResponseAndReceiveImmediately);
         RUN_TEST(test_BC95_ReceivesValidResponse);
         RUN_TEST(test_BC95_ReceivesTimeOutError);
         RUN_TEST(test_BC95_ReceivesInvalidCmdError);
         RUN_TEST(test_BC95_ReceivesUnknownError);
+        RUN_TEST(test_BC95_StripsAndRemovesCommandEchoFromValidResponse);
     }
 }
