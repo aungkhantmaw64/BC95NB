@@ -109,6 +109,17 @@ namespace MockSerialTest
         TEST_ASSERT_EQUAL(-1, stream->read());
         TEST_ASSERT_EQUAL(-1, stream->read());
     }
+
+    void test_MockSerial_StringReplace(void)
+    {
+        String response = "\r\nAT\nOK\r\n";
+        response.trim();
+        response.replace("AT", "");
+        response.replace("\n", "");
+
+        TEST_ASSERT_EQUAL_STRING("OK", response.c_str());
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_MockSerial_ClearTxBufferAfterCreate);
@@ -119,5 +130,6 @@ namespace MockSerialTest
         RUN_TEST(test_MockSerial_ReducesRxBufferSizeByOneEverytimeStreamReadIsCalled);
         RUN_TEST(test_MockSerial_ReturnsRxBufferSizeWhenSerialAvailableIsCalled);
         RUN_TEST(test_MockSerial_PutNegativeOneOnRxBufferWhenNoDataAvailable);
+        RUN_TEST(test_MockSerial_StringReplace);
     }
 }
