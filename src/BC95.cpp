@@ -6,13 +6,11 @@ BC95::BC95(Stream *stream, const int resetPin)
       _resetPin(resetPin)
 {
     _lastCmd.reserve(100);
-    _responseBuffer.reserve(100);
 }
 
 BC95::~BC95()
 {
     _lastCmd = "";
-    _responseBuffer = "";
 }
 
 void BC95::begin(void)
@@ -55,16 +53,15 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
 {
     int status = Unknown;
     unsigned long startTime = millis();
-    _responseBuffer = "";
     while ((millis() - startTime) < timeout_ms)
     {
         while (_stream->available() > 0)
         {
             char byte = _stream->read();
-            _responseBuffer += byte;
+            buffer += byte;
         }
     }
-    status = checkResponseStatus(_responseBuffer);
+    status = checkResponseStatus(buffer);
     switch (status)
     {
     case UrcEvent:
@@ -72,11 +69,9 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         break;
     case CommandSucess:
     {
-        _responseBuffer.trim();
-        _responseBuffer.replace(_lastCmd, "");
-        _responseBuffer.replace("\n", "");
-        buffer = _responseBuffer;
-        _responseBuffer = "";
+        buffer.trim();
+        buffer.replace(_lastCmd, "");
+        buffer.replace("\n", "");
     }
     break;
     default:
