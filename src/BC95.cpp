@@ -79,3 +79,10 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
     }
     return status;
 }
+
+bool BC95::isReady(void)
+{
+    String buffer;
+    send("AT");
+    return (waitForResponse(300, buffer) == CommandSucess);
+}

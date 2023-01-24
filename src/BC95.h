@@ -22,6 +22,16 @@ public:
     void send(const String &cmd);
     int waitForResponse(unsigned long timeout_ms, String &buffer);
 
+    //==================Get Modem's Information=====================//
+    bool isReady();
+    void hardReset();
+    void reset();
+    String getManufacturerRevision();
+    String getIMEI();
+    String getICCID();
+    String getIMSI();
+    String getRSSI();
+
 private:
     Stream *_stream;
     int _resetPin;
