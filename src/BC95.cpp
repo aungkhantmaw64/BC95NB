@@ -11,6 +11,8 @@ BC95::BC95(Stream *stream, const int resetPin)
 
 BC95::~BC95()
 {
+    _lastCmd = "";
+    _responseBuffer = "";
 }
 
 void BC95::begin(void)
