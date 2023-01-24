@@ -17,10 +17,14 @@ extern const unsigned long initTime;
 extern const unsigned long timeStep;
 namespace BC95Test
 {
-    void prvExpectResponse(const char *expected)
+    void prvEnableMocks(void)
     {
         mockSerial->begin();
         mockClock->begin();
+    }
+    void prvExpectResponse(const char *expected)
+    {
+        prvEnableMocks();
         mockSerial->setRxBuffer(expected);
     }
 
@@ -39,6 +43,7 @@ namespace BC95Test
     void test_BC95_AppendsCarriageReturnOnATCommand(void)
     {
         mockSerial->begin();
+        mockClock->begin();
 
         driverUnderTest->send("OK");
 
@@ -48,12 +53,30 @@ namespace BC95Test
     void test_BC95_SendsStringTypeATCommand(void)
     {
         mockSerial->begin();
-
+        mockClock->begin();
         String theATcmd = "AT";
 
         driverUnderTest->send(theATcmd);
 
         TEST_ASSERT_EQUAL_STRING("AT\r", mockSerial->getTxBuffer().c_str());
+    }
+
+    void test_BC95_SendsCmdOnlyAfterWaitingForTwentyMilliseconds()
+    {
+        mockSerial->begin();
+        mockClock->begin();
+        driverUnderTest->send("AT");
+
+        Verify(Method(ArduinoFake(), millis)).AtLeast(2);
+    }
+
+    void test_BC95_FlushChannelBeforeSendingANewCommmand(void)
+    {
+        mockSerial->begin();
+        mockClock->begin();
+        driverUnderTest->send("AT");
+
+        Verify(Method(ArduinoFake(Stream), flush)).Once();
     }
 
     void test_BC95_WaitForModemResponseAndReceiveImmediately()
@@ -95,7 +118,7 @@ namespace BC95Test
 
     void test_BC95_ReceivesInvalidCmdError()
     {
-        const char expected[] = "\r\nERROR\r\n";
+        const char expected[] = "\r\nAT+INVALID\n\nERROR\r\n";
         prvExpectResponse(expected);
 
         String buffer;
@@ -107,20 +130,23 @@ namespace BC95Test
 
     void test_BC95_ReceivesUnknownError()
     {
-        const char expected[] = "\r\n234resfdsdfsfew\r\n";
+        const char expected[] = "234resfdsdfsfew";
         prvExpectResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
         TEST_ASSERT_EQUAL_STRING(expected, buffer.c_str());
-        TEST_ASSERT_EQUAL(UnknownError, status);
+        TEST_ASSERT_EQUAL(Unknown, status);
     }
 
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
         RUN_TEST(test_BC95_AppendsCarriageReturnOnATCommand);
+        RUN_TEST(test_BC95_SendsStringTypeATCommand);
+        RUN_TEST(test_BC95_SendsCmdOnlyAfterWaitingForTwentyMilliseconds);
+        RUN_TEST(test_BC95_FlushChannelBeforeSendingANewCommmand);
         RUN_TEST(test_BC95_WaitForModemResponseAndReceiveImmediately);
         RUN_TEST(test_BC95_ReceivesValidResponse);
         RUN_TEST(test_BC95_ReceivesTimeOutError);

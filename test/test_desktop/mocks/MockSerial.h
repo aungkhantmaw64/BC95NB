@@ -35,6 +35,11 @@ public:
         When(Method(ArduinoFake(Stream), available))
             .AlwaysDo([this]() -> int
                       { return _rxBuffer.length(); });
+        When(Method(ArduinoFake(Stream), flush))
+            .AlwaysDo([this]() -> void
+                      {
+                _txBuffer = "";
+                _rxBuffer = ""; });
     }
     String getTxBuffer(void)
     {
