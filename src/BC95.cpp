@@ -53,6 +53,7 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
 {
     int status = Unknown;
     unsigned long startTime = millis();
+    _responseBuffer = "";
     while ((millis() - startTime) < timeout_ms)
     {
         while (_stream->available() > 0)
@@ -72,7 +73,7 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         _responseBuffer.trim();
         _responseBuffer.replace(_lastCmd, "");
         _responseBuffer.replace("\n", "");
-        buffer = "OK";
+        buffer = _responseBuffer;
         _responseBuffer = "";
     }
     break;
