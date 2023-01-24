@@ -72,7 +72,7 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         _responseBuffer.trim();
         _responseBuffer.replace(_lastCmd, "");
         _responseBuffer.replace("\n", "");
-        buffer = _responseBuffer;
+        buffer = "OK";
         _responseBuffer = "";
     }
     break;
