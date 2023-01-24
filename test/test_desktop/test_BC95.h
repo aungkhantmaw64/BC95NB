@@ -40,9 +40,20 @@ namespace BC95Test
     {
         mockSerial->begin();
 
-        driverUnderTest->sendCMD("OK");
+        driverUnderTest->send("OK");
 
         TEST_ASSERT_EQUAL_STRING("OK\r", mockSerial->getTxBuffer().c_str());
+    }
+
+    void test_BC95_SendsStringTypeATCommand(void)
+    {
+        mockSerial->begin();
+
+        String theATcmd = "AT";
+
+        driverUnderTest->send(theATcmd);
+
+        TEST_ASSERT_EQUAL_STRING("AT\r", mockSerial->getTxBuffer().c_str());
     }
 
     void test_BC95_WaitForModemResponseAndReceiveImmediately()

@@ -16,10 +16,15 @@ void BC95::begin(void)
     digitalWrite(_resetPin, LOW);
 }
 
-void BC95::sendCMD(const char *cmd)
+void BC95::send(const char *cmd)
 {
     _stream->print(cmd);
     _stream->print("\r");
+}
+
+void BC95::send(const String &cmd)
+{
+    this->send(cmd.c_str());
 }
 
 int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)

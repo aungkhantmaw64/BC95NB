@@ -20,7 +20,8 @@ private:
 public:
     BC95(Stream *stream, const int resetPin);
     void begin();
-    void sendCMD(const char *cmd);
+    void send(const char *cmd);
+    void send(const String &cmd);
     int waitForResponse(unsigned long timeout_ms, String &buffer);
     ~BC95();
 };
