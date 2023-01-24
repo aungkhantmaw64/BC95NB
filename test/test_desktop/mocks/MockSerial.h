@@ -12,10 +12,12 @@ public:
     MockSerial()
     {
         _txBuffer = "";
+        _rxBuffer = "";
     }
     ~MockSerial()
     {
         _txBuffer = "";
+        _rxBuffer = "";
     }
     void begin(void)
     {
