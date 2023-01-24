@@ -69,8 +69,8 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         break;
     case CommandSucess:
     {
-        buffer.trim();
         buffer.replace(_lastCmd, "");
+        buffer.trim();
         buffer.replace("\n", "");
     }
     break;

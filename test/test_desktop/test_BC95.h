@@ -133,7 +133,7 @@ namespace BC95Test
         prvExpectResponse(original);
 
         String buffer;
-        buffer.reserve(100);
+        buffer.reserve(200);
         driverUnderTest->send("AT");
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
