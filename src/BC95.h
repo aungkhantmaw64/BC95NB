@@ -6,24 +6,26 @@
 enum
 {
     CommandSucess,
+    InvalidCmdError,
     TimeoutError,
-    UnknownError,
-    InvalidCmdError
+    UrcEvent,
+    Unknown,
 };
 
 class BC95
 {
-private:
-    Stream *_stream;
-    int _resetPin;
-
 public:
     BC95(Stream *stream, const int resetPin);
+    ~BC95();
     void begin();
     void send(const char *cmd);
     void send(const String &cmd);
     int waitForResponse(unsigned long timeout_ms, String &buffer);
-    ~BC95();
+
+private:
+    Stream *_stream;
+    int _resetPin;
+    String _lastCmd;
 };
 
 #endif
