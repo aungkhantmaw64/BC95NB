@@ -141,6 +141,18 @@ namespace BC95Test
         TEST_ASSERT_EQUAL_STRING("OK", buffer.c_str());
     }
 
+    void test_BC95_IsReadyAndNoHardwareIssue(void)
+    {
+        const char expected[] = "\r\nAT\n\nOK\r\n";
+        prvExpectResponse(expected);
+
+        bool ready = driverUnderTest->isReady();
+
+        TEST_ASSERT_TRUE(ready);
+        Verify(Method(ArduinoFake(Stream), flush));
+        TEST_ASSERT_EQUAL_STRING("AT\r", mockSerial->getTxBuffer().c_str());
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
@@ -153,5 +165,6 @@ namespace BC95Test
         RUN_TEST(test_BC95_ReceivesInvalidCmdError);
         RUN_TEST(test_BC95_ReceivesUnknownError);
         RUN_TEST(test_BC95_StripsAndRemovesCommandEchoFromValidResponse);
+        RUN_TEST(test_BC95_IsReadyAndNoHardwareIssue);
     }
 }
