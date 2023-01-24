@@ -26,6 +26,7 @@ private:
     Stream *_stream;
     int _resetPin;
     String _lastCmd;
+    String _responseBuffer;
 };
 
 #endif

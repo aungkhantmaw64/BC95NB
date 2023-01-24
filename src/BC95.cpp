@@ -6,6 +6,7 @@ BC95::BC95(Stream *stream, const int resetPin)
       _resetPin(resetPin)
 {
     _lastCmd.reserve(100);
+    _responseBuffer.reserve(100);
 }
 
 BC95::~BC95()
@@ -57,9 +58,26 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         while (_stream->available() > 0)
         {
             char byte = _stream->read();
-            buffer += byte;
+            _responseBuffer += byte;
         }
     }
-    status = checkResponseStatus(buffer);
+    status = checkResponseStatus(_responseBuffer);
+    switch (status)
+    {
+    case UrcEvent:
+        /* Write code for handling unsolicited result code */
+        break;
+    case CommandSucess:
+    {
+        _responseBuffer.trim();
+        _responseBuffer.replace(_lastCmd, "");
+        _responseBuffer.replace("\n", "");
+        buffer = _responseBuffer;
+        _responseBuffer = "";
+    }
+    break;
+    default:
+        break;
+    }
     return status;
 }
