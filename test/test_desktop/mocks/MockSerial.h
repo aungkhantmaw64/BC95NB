@@ -11,8 +11,8 @@ class MockSerial
 public:
     MockSerial()
     {
-        _txBuffer = "";
-        _rxBuffer = "";
+        _txBuffer.reserve(100);
+        _rxBuffer.reserve(100);
     }
     ~MockSerial()
     {
