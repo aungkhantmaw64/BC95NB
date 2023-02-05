@@ -87,30 +87,27 @@ bool BC95::isReady(void)
     return (waitForResponse(300, _responseStorage) == CommandSucess);
 }
 
-String BC95::getIMEI(void)
+String BC95::getID(const char *prefix, int idSize)
 {
-    String imei;
-    imei.reserve(15);
-    send("AT+CGSN=1");
-    int status = waitForResponse(300, imei);
+    String id;
+    id.reserve(idSize);
+    int status = waitForResponse(300, id);
     if (status == CommandSucess)
     {
-        imei.replace("+CGSN:", "");
-        imei = imei.substring(0, 15);
+        id.replace(prefix, "");
+        id = id.substring(0, idSize);
     }
-    return imei;
+    return id;
+}
+
+String BC95::getIMEI(void)
+{
+    send("AT+CGSN=1");
+    return getID("+CGSN:", 15);
 }
 
 String BC95::getICCID(void)
 {
-    String iccid;
-    iccid.reserve(7 + 20);
     send("AT+NCCID");
-    int status = waitForResponse(300, iccid);
-    if (status == CommandSucess)
-    {
-        iccid.replace("+NCCID:", "");
-        iccid = iccid.substring(0, 20);
-    }
-    return iccid;
+    return getID("+NCCID:", 20);
 }
