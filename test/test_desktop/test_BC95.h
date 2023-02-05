@@ -165,6 +165,16 @@ namespace BC95Test
         TEST_ASSERT_EQUAL_STRING("AT\r", mockSerial->getTxBuffer().c_str());
     }
 
+    void test_BC95_GetIMEI(void)
+    {
+        const char response[] = "AT+CGSN=1\r\n+CGSN:490154203237511\r\nOK\r\n";
+        mockSerial->begin();
+        mockClock->begin();
+        mockSerial->setRxBuffer(response);
+
+        TEST_ASSERT_EQUAL_STRING("490154203237511", driverUnderTest->getIMEI().c_str());
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
@@ -179,5 +189,6 @@ namespace BC95Test
         RUN_TEST(test_BC95_StripsAndRemovesCommandEchoFromValidResponse);
         RUN_TEST(test_BC95_IsReadyAndNoHardwareIssue);
         RUN_TEST(test_BC95_IsNotReadyWhenReceiveNoResponse);
+        RUN_TEST(test_BC95_GetIMEI);
     }
 }
