@@ -175,6 +175,16 @@ namespace BC95Test
         TEST_ASSERT_EQUAL_STRING("490154203237511", driverUnderTest->getIMEI().c_str());
     }
 
+    void test_GC95_GetICCID(void)
+    {
+        const char response[] = "\r\nAT+NCCID\r\n+NCCID:44123456789012345678\r\nOK\r\n";
+        mockSerial->begin();
+        mockClock->begin();
+        mockSerial->setRxBuffer(response);
+
+        TEST_ASSERT_EQUAL_STRING("44123456789012345678", driverUnderTest->getICCID().c_str());
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
@@ -190,5 +200,6 @@ namespace BC95Test
         RUN_TEST(test_BC95_IsReadyAndNoHardwareIssue);
         RUN_TEST(test_BC95_IsNotReadyWhenReceiveNoResponse);
         RUN_TEST(test_BC95_GetIMEI);
+        RUN_TEST(test_GC95_GetICCID);
     }
 }

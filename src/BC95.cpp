@@ -90,7 +90,7 @@ bool BC95::isReady(void)
 String BC95::getIMEI(void)
 {
     String imei;
-    imei.reserve(7 + 20);
+    imei.reserve(15);
     send("AT+CGSN=1");
     int status = waitForResponse(300, imei);
     if (status == CommandSucess)
@@ -99,4 +99,18 @@ String BC95::getIMEI(void)
         imei = imei.substring(0, 15);
     }
     return imei;
+}
+
+String BC95::getICCID(void)
+{
+    String iccid;
+    iccid.reserve(7 + 20);
+    send("AT+NCCID");
+    int status = waitForResponse(300, iccid);
+    if (status == CommandSucess)
+    {
+        iccid.replace("+NCCID:", "");
+        iccid = iccid.substring(0, 20);
+    }
+    return iccid;
 }
