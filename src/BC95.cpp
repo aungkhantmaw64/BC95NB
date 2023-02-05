@@ -72,8 +72,6 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
     {
         buffer.replace(_lastCmd, "");
         buffer.trim();
-        buffer.replace("\n", "");
-        buffer.replace("\r", "");
     }
     break;
     default:
@@ -98,7 +96,7 @@ String BC95::getIMEI(void)
     if (status == CommandSucess)
     {
         imei.replace("+CGSN:", "");
-        imei.replace("OK", "");
+        imei = imei.substring(0, 15);
     }
     return imei;
 }

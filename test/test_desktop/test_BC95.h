@@ -129,7 +129,7 @@ namespace BC95Test
 
     void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
     {
-        const char original[] = "\r\nAT\n\nOK\r\n";
+        const char original[] = "\r\nAT\r\nOK\r\n";
         prvExpectResponse(original);
 
         String buffer;
@@ -167,7 +167,7 @@ namespace BC95Test
 
     void test_BC95_GetIMEI(void)
     {
-        const char response[] = "AT+CGSN=1\r\n+CGSN:490154203237511\r\nOK\r\n";
+        const char response[] = "\r\nAT+CGSN=1\r\n+CGSN:490154203237511\r\nOK\r\n";
         mockSerial->begin();
         mockClock->begin();
         mockSerial->setRxBuffer(response);

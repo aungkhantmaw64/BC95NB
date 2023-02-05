@@ -26,7 +26,6 @@ public:
     bool isReady();
     void hardReset();
     void reset();
-    String getManufacturerRevision();
     String getIMEI();
     String getICCID();
     String getIMSI();
