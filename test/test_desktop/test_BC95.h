@@ -22,7 +22,7 @@ namespace BC95Test
         mockSerial->begin();
         mockClock->begin();
     }
-    void prvExpectResponse(const char *expected)
+    void setExpectedResponse(const char *expected)
     {
         prvEnableMocks();
         mockSerial->setRxBuffer(expected);
@@ -97,7 +97,7 @@ namespace BC95Test
     void test_BC95_ReceivesTimeOutError()
     {
         const char expected[] = "";
-        prvExpectResponse(expected);
+        setExpectedResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
@@ -108,7 +108,7 @@ namespace BC95Test
     void test_BC95_ReceivesInvalidCmdError()
     {
         const char expected[] = "\r\nAT+INVALID\n\nERROR\r\n";
-        prvExpectResponse(expected);
+        setExpectedResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
@@ -119,7 +119,7 @@ namespace BC95Test
     void test_BC95_ReceivesUnknownError()
     {
         const char expected[] = "234resfdsdfsfew";
-        prvExpectResponse(expected);
+        setExpectedResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
@@ -130,7 +130,7 @@ namespace BC95Test
     void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
     {
         const char original[] = "\r\nAT\n\nOK\r\n";
-        prvExpectResponse(original);
+        setExpectedResponse(original);
 
         String buffer;
         buffer.reserve(200);
@@ -144,7 +144,7 @@ namespace BC95Test
     void test_BC95_IsReadyAndNoHardwareIssue(void)
     {
         const char expected[] = "\r\nAT\n\nOK\r\n";
-        prvExpectResponse(expected);
+        setExpectedResponse(expected);
 
         bool ready = driverUnderTest->isReady();
 
@@ -156,13 +156,17 @@ namespace BC95Test
     void test_BC95_IsNotReadyWhenReceiveNoResponse(void)
     {
         const char expected[] = "";
-        prvExpectResponse(expected);
+        setExpectedResponse(expected);
 
         bool ready = driverUnderTest->isReady();
 
         TEST_ASSERT_TRUE(!ready);
         Verify(Method(ArduinoFake(Stream), flush));
         TEST_ASSERT_EQUAL_STRING("AT\r", mockSerial->getTxBuffer().c_str());
+    }
+
+    void test_BC95_RebootDueToSoftwareReset(void)
+    {
     }
 
     void run_tests(void)
