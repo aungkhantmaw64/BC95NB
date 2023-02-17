@@ -36,6 +36,9 @@ private:
     Stream *_stream;
     int _resetPin;
     String _lastCmd;
+    String _responseStorage;
+
+    String getID(const char *prefix, int idSize);
 };
 
 #endif

@@ -9,6 +9,7 @@ BC95::BC95(Stream *stream, const int resetPin)
       _resetPin(resetPin)
 {
     _lastCmd.reserve(100);
+    _responseStorage.reserve(100);
 }
 
 BC95::~BC95()
@@ -74,7 +75,6 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
     {
         buffer.replace(_lastCmd, "");
         buffer.trim();
-        buffer.replace("\n", "");
     }
     break;
     default:
@@ -85,9 +85,34 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
 
 bool BC95::isReady(void)
 {
-    String buffer;
+    _responseStorage = "";
     send("AT");
-    return (waitForResponse(300, buffer) == CommandSucess);
+    return (waitForResponse(300, _responseStorage) == CommandSucess);
+}
+
+String BC95::getID(const char *prefix, int idSize)
+{
+    String id;
+    id.reserve(idSize);
+    int status = waitForResponse(300, id);
+    if (status == CommandSucess)
+    {
+        id.replace(prefix, "");
+        id = id.substring(0, idSize);
+    }
+    return id;
+}
+
+String BC95::getIMEI(void)
+{
+    send("AT+CGSN=1");
+    return getID("+CGSN:", 15);
+}
+
+String BC95::getICCID(void)
+{
+    send("AT+NCCID");
+    return getID("+NCCID:", 20);
 }
 
 int BC95::reset(void)
