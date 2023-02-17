@@ -3,6 +3,7 @@
 #include "mocks/MockSerial.h"
 #include "mocks/MockClock.h"
 #include "BC95.h"
+#include <errno.h>
 
 using namespace fakeit;
 
@@ -155,8 +156,7 @@ namespace BC95Test
 
     void test_BC95_IsNotReadyWhenReceiveNoResponse(void)
     {
-        const char expected[] = "";
-        setExpectedResponse(expected);
+        setExpectedResponse("");
 
         bool ready = driverUnderTest->isReady();
 
@@ -167,6 +167,26 @@ namespace BC95Test
 
     void test_BC95_RebootDueToSoftwareReset(void)
     {
+        mockClock->begin();
+        setExpectedResponse("\r\nREBOOTING\r\n");
+
+        int retval = driverUnderTest->reset();
+
+        TEST_ASSERT_EQUAL_INT(0, retval);
+        Verify(Method(ArduinoFake(), millis)).AtLeastOnce();
+        TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
+    }
+
+    void test_BC95_RebootFailDuringSoftwareReset(void)
+    {
+        mockClock->begin();
+        setExpectedResponse("");
+
+        int retval = driverUnderTest->reset();
+
+        TEST_ASSERT_EQUAL_INT(-EAGAIN, retval);
+        Verify(Method(ArduinoFake(), millis)).AtLeastOnce();
+        TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
     }
 
     void run_tests(void)
@@ -183,5 +203,7 @@ namespace BC95Test
         RUN_TEST(test_BC95_StripsAndRemovesCommandEchoFromValidResponse);
         RUN_TEST(test_BC95_IsReadyAndNoHardwareIssue);
         RUN_TEST(test_BC95_IsNotReadyWhenReceiveNoResponse);
+        RUN_TEST(test_BC95_RebootDueToSoftwareReset);
+        RUN_TEST(test_BC95_RebootFailDuringSoftwareReset);
     }
 }
