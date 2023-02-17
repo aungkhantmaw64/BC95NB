@@ -1,5 +1,8 @@
 #include "BC95.h"
 #include <cstring>
+#include <errno.h>
+
+#define DEFAULT_REBOOT_TIME_MS 3000
 
 BC95::BC95(Stream *stream, const int resetPin)
     : _stream(stream),
@@ -85,4 +88,16 @@ bool BC95::isReady(void)
     String buffer;
     send("AT");
     return (waitForResponse(300, buffer) == CommandSucess);
+}
+
+int BC95::reset(void)
+{
+    unsigned long startTime = millis();
+    send("AT+NRB");
+    String buffer;
+    waitForResponse(1000, buffer);
+    if (buffer.indexOf("REBOOT") != -1)
+        return 0;
+    else
+        return -EAGAIN;
 }

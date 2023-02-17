@@ -24,8 +24,8 @@ public:
 
     //==================Get Modem's Information=====================//
     bool isReady();
-    void hardReset();
-    void reset();
+    int hardReset(bool inverted);
+    int reset();
     String getManufacturerRevision();
     String getIMEI();
     String getICCID();
