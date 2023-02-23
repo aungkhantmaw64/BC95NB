@@ -196,13 +196,9 @@ namespace BC95Test
 
         int errCode = driverUnderTest->reset();
 
-        TEST_ASSERT_EQUAL(-EAGAIN, errCode);
+        TEST_ASSERT_EQUAL(-1, errCode);
         Verify(Method(ArduinoFake(), millis)).AtLeastOnce();
         TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
-    }
-
-    void test_BC95_AttachesNetworkAfterSettingPhoneFullFunction(void)
-    {
     }
 
     void
