@@ -201,8 +201,7 @@ namespace BC95Test
         TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
     }
 
-    void
-    run_tests(void)
+    void run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
         RUN_TEST(test_BC95_AppendsCarriageReturnOnATCommand);
