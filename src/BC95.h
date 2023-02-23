@@ -22,7 +22,7 @@ public:
     void begin() override;
     void send(const char *cmd) override;
     void send(const String &cmd) override;
-    int waitForResponse(unsigned long timeout_ms, String *buffer) override;
+    int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) override;
 
     //==================Get Modem's Information=====================//
     bool isReady();
