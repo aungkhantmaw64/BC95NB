@@ -49,6 +49,8 @@ static int checkResponseStatus(String *buffer)
         return MODEM_STATUS_INVALID_PARAMETERS;
     else if (buffer->lastIndexOf("OK") != -1)
         return MODEM_STATUS_VALID_RESPONSE;
+    else if (buffer->lastIndexOf("REBOOT") != -1)
+        return MODEM_STATUS_REBOOTED;
     else if (buffer->endsWith("\r\n"))
         return MODEM_STATUS_URC_EVENT;
     else
@@ -132,9 +134,8 @@ int BC95::reset(void)
     unsigned long startTime = millis();
     send("AT+NRB");
     String buffer;
-    waitForResponse(1000, &buffer);
-    if (buffer.indexOf("REBOOT") != -1)
-        return 0;
-    else
-        return -EAGAIN;
+    int status = waitForResponse(1000, &buffer);
+    if (status != MODEM_STATUS_REBOOTED)
+        return -1;
+    return 0;
 }
