@@ -39,23 +39,23 @@ void BC95::send(const String &cmd)
     this->send(cmd.c_str());
 }
 
-static int checkResponseStatus(String &buffer)
+static int checkResponseStatus(String *buffer)
 {
-    if (buffer.length() == 0)
+    if (buffer->length() == 0)
         return TimeoutError;
-    else if (buffer.lastIndexOf("+CME ERROR:") != -1)
+    else if (buffer->lastIndexOf("+CME ERROR:") != -1)
         return UeError;
-    else if (buffer.lastIndexOf("ERROR") != -1)
+    else if (buffer->lastIndexOf("ERROR") != -1)
         return InvalidParameters;
-    else if (buffer.lastIndexOf("OK") != -1)
+    else if (buffer->lastIndexOf("OK") != -1)
         return CommandSucess;
-    else if (buffer.endsWith("\r\n"))
+    else if (buffer->endsWith("\r\n"))
         return UrcEvent;
     else
         return Unknown;
 }
 
-int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
+int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
 {
     int status = Unknown;
     unsigned long startTime = millis();
@@ -64,7 +64,7 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         while (_stream->available() > 0)
         {
             char byte = _stream->read();
-            buffer += byte;
+            *buffer += byte;
         }
     }
     status = checkResponseStatus(buffer);
@@ -75,8 +75,8 @@ int BC95::waitForResponse(unsigned long timeout_ms, String &buffer)
         break;
     case CommandSucess:
     {
-        buffer.replace(_lastCmd, "");
-        buffer.trim();
+        buffer->replace(_lastCmd, "");
+        buffer->trim();
     }
     break;
     default:
@@ -89,14 +89,14 @@ bool BC95::isReady(void)
 {
     _responseStorage = "";
     send("AT");
-    return (waitForResponse(300, _responseStorage) == CommandSucess);
+    return (waitForResponse(300, &_responseStorage) == CommandSucess);
 }
 
 String BC95::extractCode(const char *prefix, int idSize)
 {
     String id;
     id.reserve(idSize);
-    int status = waitForResponse(300, id);
+    int status = waitForResponse(300, &id);
     if (status == CommandSucess)
     {
         id.replace(prefix, "");
@@ -117,12 +117,27 @@ String BC95::getICCID(void)
     return extractCode("+NCCID:", 20);
 }
 
+String BC95::getManufacturerRevision()
+{
+    return "";
+}
+
+String BC95::getIMSI()
+{
+    return "";
+}
+
+String BC95::getRSSI()
+{
+    return "";
+}
+
 int BC95::reset(void)
 {
     unsigned long startTime = millis();
     send("AT+NRB");
     String buffer;
-    waitForResponse(1000, buffer);
+    waitForResponse(1000, &buffer);
     if (buffer.indexOf("REBOOT") != -1)
         return 0;
     else

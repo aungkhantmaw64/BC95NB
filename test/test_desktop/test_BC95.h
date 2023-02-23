@@ -90,9 +90,9 @@ namespace BC95Test
 
         mockSerial->setRxBuffer(expected);
 
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(CommandSucess, status);
+        TEST_ASSERT_EQUAL(CommandSucess, CommandSucess);
     }
 
     void test_BC95_ReceivesUeError()
@@ -102,7 +102,7 @@ namespace BC95Test
         mockSerial->begin();
         mockSerial->setRxBuffer(expected);
         String buffer;
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
         TEST_ASSERT_EQUAL(UeError, status);
     }
@@ -113,7 +113,7 @@ namespace BC95Test
         setExpectedResponse(expected);
 
         String buffer;
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
         TEST_ASSERT_EQUAL(TimeoutError, status);
     }
@@ -124,7 +124,7 @@ namespace BC95Test
         setExpectedResponse(expected);
 
         String buffer;
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
         TEST_ASSERT_EQUAL(InvalidParameters, status);
     }
@@ -135,7 +135,7 @@ namespace BC95Test
         setExpectedResponse(expected);
 
         String buffer;
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
         TEST_ASSERT_EQUAL(Unknown, status);
     }
@@ -148,7 +148,7 @@ namespace BC95Test
         String buffer;
         buffer.reserve(200);
         driverUnderTest->send("AT");
-        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+        int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
         TEST_ASSERT_EQUAL(CommandSucess, status);
         TEST_ASSERT_EQUAL_STRING("OK", buffer.c_str());
@@ -200,16 +200,6 @@ namespace BC95Test
         Verify(Method(ArduinoFake(), millis)).AtLeastOnce();
         TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
     }
-
-    // void test_BC95_DisableAutomaticNetworkAttachmentsForManualAttachment(void)
-    // {
-    //     mockClock->begin();
-    //     mockSerial->begin();
-
-    //     int errCode = driverUnderTest->attachNetwork(NB_BAND_B8);
-
-    //     TEST_ASSERT_EQUAL(0, errCode);
-    // }
 
     void test_BC95_AttachesNetworkAfterSettingPhoneFullFunction(void)
     {

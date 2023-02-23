@@ -2,6 +2,7 @@
 #define D_BC95_H
 
 #include <Arduino.h>
+#include "Modem.h"
 
 enum
 {
@@ -13,25 +14,25 @@ enum
     Unknown,
 };
 
-class BC95
+class BC95 : public Modem
 {
 public:
     BC95(Stream *stream, const int resetPin);
     ~BC95();
-    void begin();
-    void send(const char *cmd);
-    void send(const String &cmd);
-    int waitForResponse(unsigned long timeout_ms, String &buffer);
+    void begin() override;
+    void send(const char *cmd) override;
+    void send(const String &cmd) override;
+    int waitForResponse(unsigned long timeout_ms, String *buffer) override;
 
     //==================Get Modem's Information=====================//
     bool isReady();
     int hardReset(bool inverted);
     int reset();
-    String getManufacturerRevision();
-    String getIMEI();
-    String getICCID();
-    String getIMSI();
-    String getRSSI();
+    String getManufacturerRevision() override;
+    String getIMEI() override;
+    String getICCID() override;
+    String getIMSI() override;
+    String getRSSI() override;
 
 private:
     Stream *_stream;
