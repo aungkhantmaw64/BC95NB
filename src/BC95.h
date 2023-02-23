@@ -38,7 +38,7 @@ private:
     Stream *_stream;
     int _resetPin;
     String _lastCmd;
-    String _responseStorage;
+    String _buffer;
 
     String extractCode(const char *prefix, int codeLength);
 };

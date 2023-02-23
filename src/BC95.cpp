@@ -9,7 +9,7 @@ BC95::BC95(Stream *stream, const int resetPin)
       _resetPin(resetPin)
 {
     _lastCmd.reserve(100);
-    _responseStorage.reserve(100);
+    _buffer.reserve(100);
 }
 
 BC95::~BC95()
@@ -58,38 +58,33 @@ static int checkResponseStatus(String *buffer)
 int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
 {
     int status = Unknown;
+    _buffer = "";
     unsigned long startTime = millis();
     while ((millis() - startTime) < timeout_ms)
     {
         while (_stream->available() > 0)
         {
             char byte = _stream->read();
-            *buffer += byte;
+            _buffer += byte;
         }
     }
-    status = checkResponseStatus(buffer);
-    switch (status)
+    status = checkResponseStatus(&_buffer);
+    if (_buffer.startsWith(_lastCmd, _lastCmd.length()))
     {
-    case UrcEvent:
-        /* Write code for handling unsolicited result code */
-        break;
-    case CommandSucess:
-    {
-        buffer->replace(_lastCmd, "");
-        buffer->trim();
+        _buffer.replace(_lastCmd, "");
+        _buffer.trim();
     }
-    break;
-    default:
-        break;
+    if (buffer)
+    {
+        *buffer = _buffer;
     }
     return status;
 }
 
 bool BC95::isReady(void)
 {
-    _responseStorage = "";
     send("AT");
-    return (waitForResponse(300, &_responseStorage) == CommandSucess);
+    return (waitForResponse(300, &_buffer) == CommandSucess);
 }
 
 String BC95::extractCode(const char *prefix, int idSize)
