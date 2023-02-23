@@ -92,7 +92,7 @@ namespace BC95Test
 
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(CommandSucess, CommandSucess);
+        TEST_ASSERT_EQUAL(MODEM_STATUS_VALID_RESPONSE, status);
     }
 
     void test_BC95_ReceivesUeError()
@@ -104,7 +104,7 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(UeError, status);
+        TEST_ASSERT_EQUAL(MODEM_STATUS_UE_ERROR, status);
     }
 
     void test_BC95_ReceivesTimeOutError()
@@ -115,7 +115,7 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(TimeoutError, status);
+        TEST_ASSERT_EQUAL(MODEM_STATUS_TIMEOUT_ERROR, status);
     }
 
     void test_BC95_ReceivesInvalidCmdError()
@@ -126,7 +126,7 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(InvalidParameters, status);
+        TEST_ASSERT_EQUAL(MODEM_STATUS_INVALID_PARAMETERS, status);
     }
 
     void test_BC95_ReceivesUnknownError()
@@ -137,7 +137,7 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(Unknown, status);
+        TEST_ASSERT_EQUAL(MODEM_STATUS_UNKNOWN, status);
     }
 
     void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
@@ -150,7 +150,7 @@ namespace BC95Test
         driverUnderTest->send("AT");
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
-        TEST_ASSERT_EQUAL(CommandSucess, status);
+        TEST_ASSERT_EQUAL(MODEM_STATUS_VALID_RESPONSE, status);
         TEST_ASSERT_EQUAL_STRING("OK", buffer.c_str());
     }
 

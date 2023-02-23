@@ -42,22 +42,22 @@ void BC95::send(const String &cmd)
 static int checkResponseStatus(String *buffer)
 {
     if (buffer->length() == 0)
-        return TimeoutError;
+        return MODEM_STATUS_TIMEOUT_ERROR;
     else if (buffer->lastIndexOf("+CME ERROR:") != -1)
-        return UeError;
+        return MODEM_STATUS_UE_ERROR;
     else if (buffer->lastIndexOf("ERROR") != -1)
-        return InvalidParameters;
+        return MODEM_STATUS_INVALID_PARAMETERS;
     else if (buffer->lastIndexOf("OK") != -1)
-        return CommandSucess;
+        return MODEM_STATUS_VALID_RESPONSE;
     else if (buffer->endsWith("\r\n"))
-        return UrcEvent;
+        return MODEM_STATUS_URC_EVENT;
     else
-        return Unknown;
+        return MODEM_STATUS_UNKNOWN;
 }
 
 int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
 {
-    int status = Unknown;
+    int status = MODEM_STATUS_UNKNOWN;
     _lastResp = "";
     unsigned long startTime = millis();
     while ((millis() - startTime) < timeout_ms)
@@ -84,7 +84,7 @@ int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
 bool BC95::isReady(void)
 {
     send("AT");
-    return (waitForResponse(300) == CommandSucess);
+    return (waitForResponse(300) == MODEM_STATUS_VALID_RESPONSE);
 }
 
 String BC95::extractCode(const char *prefix, int codeSize)
@@ -92,7 +92,7 @@ String BC95::extractCode(const char *prefix, int codeSize)
     String code;
     code.reserve(codeSize);
     int status = waitForResponse(300, &code);
-    if (status == CommandSucess)
+    if (status == MODEM_STATUS_VALID_RESPONSE)
     {
         int pos = code.indexOf(prefix) + 1;
         code = code.substring(pos, pos + codeSize);

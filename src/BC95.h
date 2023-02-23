@@ -4,16 +4,6 @@
 #include <Arduino.h>
 #include "Modem.h"
 
-enum
-{
-    CommandSucess,
-    InvalidParameters,
-    TimeoutError,
-    UrcEvent,
-    UeError,
-    Unknown,
-};
-
 class BC95 : public Modem
 {
 public:
