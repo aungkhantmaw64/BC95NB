@@ -43,8 +43,10 @@ static int checkResponseStatus(String &buffer)
 {
     if (buffer.length() == 0)
         return TimeoutError;
+    else if (buffer.lastIndexOf("+CME ERROR:"))
+        return UeError;
     else if (buffer.lastIndexOf("ERROR") != -1)
-        return InvalidCmdError;
+        return InvalidParameters;
     else if (buffer.lastIndexOf("OK") != -1)
         return CommandSucess;
     else if (buffer.endsWith("\r\n"))

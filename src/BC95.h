@@ -6,9 +6,10 @@
 enum
 {
     CommandSucess,
-    InvalidCmdError,
+    InvalidParameters,
     TimeoutError,
     UrcEvent,
+    UeError,
     Unknown,
 };
 
