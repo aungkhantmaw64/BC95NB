@@ -120,6 +120,16 @@ namespace MockSerialTest
         TEST_ASSERT_EQUAL_STRING("OK", response.c_str());
     }
 
+    void test_MockSerial_StoreASequenceOfResponses(void)
+    {
+        MockSerial mock_serial;
+        Stream *stream = ArduinoFakeMock(Stream);
+        mock_serial.begin();
+
+        mock_serial.addResponse("AT\r", "OK");
+        mock_serial.addResponse("Foo", "Bar");
+    }
+
     void run_tests(void)
     {
         RUN_TEST(test_MockSerial_ClearTxBufferAfterCreate);
@@ -131,5 +141,6 @@ namespace MockSerialTest
         RUN_TEST(test_MockSerial_ReturnsRxBufferSizeWhenSerialAvailableIsCalled);
         RUN_TEST(test_MockSerial_PutNegativeOneOnRxBufferWhenNoDataAvailable);
         RUN_TEST(test_MockSerial_StringReplace);
+        RUN_TEST(test_MockSerial_StoreASequenceOfRxBuffers);
     }
 }

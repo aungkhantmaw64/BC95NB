@@ -189,7 +189,22 @@ namespace BC95Test
         TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
     }
 
-    void run_tests(void)
+    // void test_BC95_DisableAutomaticNetworkAttachmentsForManualAttachment(void)
+    // {
+    //     mockClock->begin();
+    //     mockSerial->begin();
+
+    //     int errCode = driverUnderTest->attachNetwork(NB_BAND_B8);
+
+    //     TEST_ASSERT_EQUAL(0, errCode);
+    // }
+
+    void test_BC95_AttachesNetworkAfterSettingPhoneFullFunction(void)
+    {
+    }
+
+    void
+    run_tests(void)
     {
         RUN_TEST(test_BC95_SetsResetPinToOutputAndLowAfterBegin);
         RUN_TEST(test_BC95_AppendsCarriageReturnOnATCommand);

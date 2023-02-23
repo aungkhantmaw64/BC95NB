@@ -38,7 +38,7 @@ private:
     String _lastCmd;
     String _responseStorage;
 
-    String getID(const char *prefix, int idSize);
+    String extractCode(const char *prefix, int codeLength);
 };
 
 #endif

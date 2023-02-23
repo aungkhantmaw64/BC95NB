@@ -90,7 +90,7 @@ bool BC95::isReady(void)
     return (waitForResponse(300, _responseStorage) == CommandSucess);
 }
 
-String BC95::getID(const char *prefix, int idSize)
+String BC95::extractCode(const char *prefix, int idSize)
 {
     String id;
     id.reserve(idSize);
@@ -106,13 +106,13 @@ String BC95::getID(const char *prefix, int idSize)
 String BC95::getIMEI(void)
 {
     send("AT+CGSN=1");
-    return getID("+CGSN:", 15);
+    return extractCode("+CGSN:", 15);
 }
 
 String BC95::getICCID(void)
 {
     send("AT+NCCID");
-    return getID("+NCCID:", 20);
+    return extractCode("+NCCID:", 20);
 }
 
 int BC95::reset(void)
