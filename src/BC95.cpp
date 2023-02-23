@@ -131,10 +131,8 @@ String BC95::getRSSI()
 
 int BC95::reset(void)
 {
-    unsigned long startTime = millis();
     send("AT+NRB");
-    String buffer;
-    int status = waitForResponse(1000, &buffer);
+    int status = waitForResponse(1000);
     if (status != MODEM_STATUS_REBOOTED)
         return -1;
     return 0;
