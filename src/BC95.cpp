@@ -43,7 +43,7 @@ static int checkResponseStatus(String &buffer)
 {
     if (buffer.length() == 0)
         return TimeoutError;
-    else if (buffer.lastIndexOf("+CME ERROR:"))
+    else if (buffer.lastIndexOf("+CME ERROR:") != -1)
         return UeError;
     else if (buffer.lastIndexOf("ERROR") != -1)
         return InvalidParameters;

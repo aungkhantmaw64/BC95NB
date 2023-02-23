@@ -95,6 +95,18 @@ namespace BC95Test
         TEST_ASSERT_EQUAL(CommandSucess, status);
     }
 
+    void test_BC95_ReceivesUeError()
+    {
+        const char expected[] = "\r\n+CME ERROR:23\r\n";
+        mockClock->begin();
+        mockSerial->begin();
+        mockSerial->setRxBuffer(expected);
+        String buffer;
+        int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
+
+        TEST_ASSERT_EQUAL(UeError, status);
+    }
+
     void test_BC95_ReceivesTimeOutError()
     {
         const char expected[] = "";
@@ -114,7 +126,7 @@ namespace BC95Test
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, buffer);
 
-        TEST_ASSERT_EQUAL(InvalidCmdError, status);
+        TEST_ASSERT_EQUAL(InvalidParameters, status);
     }
 
     void test_BC95_ReceivesUnknownError()
@@ -212,6 +224,7 @@ namespace BC95Test
         RUN_TEST(test_BC95_SendsCmdOnlyAfterWaitingForTwentyMilliseconds);
         RUN_TEST(test_BC95_FlushChannelBeforeSendingANewCommmand);
         RUN_TEST(test_BC95_ReceivesValidResponse);
+        RUN_TEST(test_BC95_ReceivesUeError);
         RUN_TEST(test_BC95_ReceivesTimeOutError);
         RUN_TEST(test_BC95_ReceivesInvalidCmdError);
         RUN_TEST(test_BC95_ReceivesUnknownError);
