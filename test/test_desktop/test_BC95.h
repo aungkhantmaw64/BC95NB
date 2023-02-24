@@ -25,7 +25,6 @@ namespace BC95Test
     }
     void setExpectedResponse(const char *expected)
     {
-        _enableMocks();
         mockSerial->setRxBuffer(expected);
     }
 
