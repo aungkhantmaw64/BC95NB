@@ -23,7 +23,7 @@ namespace BC95Test
         mockSerial->begin();
         mockClock->begin();
     }
-    void setExpectedResponse(const char *expected)
+    void _expectResponse(const char *expected)
     {
         mockSerial->setRxBuffer(expected);
     }
@@ -109,7 +109,7 @@ namespace BC95Test
     void test_BC95_ReceivesTimeOutError()
     {
         const char expected[] = "";
-        setExpectedResponse(expected);
+        _expectResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
@@ -120,7 +120,7 @@ namespace BC95Test
     void test_BC95_ReceivesInvalidCmdError()
     {
         const char expected[] = "\r\nAT+INVALID\n\nERROR\r\n";
-        setExpectedResponse(expected);
+        _expectResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
@@ -131,7 +131,7 @@ namespace BC95Test
     void test_BC95_ReceivesUnknownError()
     {
         const char expected[] = "234resfdsdfsfew";
-        setExpectedResponse(expected);
+        _expectResponse(expected);
 
         String buffer;
         int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
@@ -142,7 +142,7 @@ namespace BC95Test
     void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
     {
         const char original[] = "\r\nAT\n\nOK\r\n";
-        setExpectedResponse(original);
+        _expectResponse(original);
 
         String buffer;
         buffer.reserve(200);
@@ -156,7 +156,7 @@ namespace BC95Test
     void test_BC95_IsReadyAndNoHardwareIssue(void)
     {
         const char expected[] = "\r\nAT\n\nOK\r\n";
-        setExpectedResponse(expected);
+        _expectResponse(expected);
 
         bool ready = driverUnderTest->isReady();
 
@@ -167,7 +167,7 @@ namespace BC95Test
 
     void test_BC95_IsNotReadyWhenReceiveNoResponse(void)
     {
-        setExpectedResponse("");
+        _expectResponse("");
 
         bool ready = driverUnderTest->isReady();
 
@@ -179,7 +179,7 @@ namespace BC95Test
     void test_BC95_RebootDueToSoftwareReset(void)
     {
         mockClock->begin();
-        setExpectedResponse("\r\nREBOOTING\r\n");
+        _expectResponse("\r\nREBOOTING\r\n");
 
         int errCode = driverUnderTest->reset();
 
@@ -191,7 +191,7 @@ namespace BC95Test
     void test_BC95_RebootFailsDuringSoftwareReset(void)
     {
         mockClock->begin();
-        setExpectedResponse("");
+        _expectResponse("");
 
         int errCode = driverUnderTest->reset();
 
