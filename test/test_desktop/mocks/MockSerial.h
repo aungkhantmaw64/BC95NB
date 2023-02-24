@@ -52,7 +52,7 @@ public:
     {
         return _rxBuffer;
     }
-    void setRxBuffer(const char *str)
+    void addRxContents(const char *str)
     {
         _rxBuffer = String(str);
     }

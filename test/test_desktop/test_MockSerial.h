@@ -68,7 +68,7 @@ namespace MockSerialTest
     void test_MockSerial_SetRxBufferToGivenData(void)
     {
         MockSerial mock_serial;
-        mock_serial.setRxBuffer("OK");
+        mock_serial.addRxContents("OK");
 
         TEST_ASSERT_EQUAL_STRING("OK", mock_serial.getRxBuffer().c_str());
     }
@@ -76,7 +76,7 @@ namespace MockSerialTest
     {
         MockSerial mock_serial;
         Stream *stream = ArduinoFakeMock(Stream);
-        mock_serial.setRxBuffer("data");
+        mock_serial.addRxContents("data");
         mock_serial.begin();
         TEST_ASSERT_EQUAL_CHAR('d', stream->read());
         TEST_ASSERT_EQUAL(3, mock_serial.getRxBuffer().length());
@@ -94,9 +94,9 @@ namespace MockSerialTest
         Stream *stream = ArduinoFakeMock(Stream);
         mock_serial.begin();
         TEST_ASSERT_EQUAL(0, stream->available());
-        mock_serial.setRxBuffer("OK");
+        mock_serial.addRxContents("OK");
         TEST_ASSERT_EQUAL(2, stream->available());
-        mock_serial.setRxBuffer("Hello");
+        mock_serial.addRxContents("Hello");
         TEST_ASSERT_EQUAL(5, stream->available());
     }
 
