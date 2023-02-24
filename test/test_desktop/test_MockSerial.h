@@ -62,7 +62,7 @@ namespace MockSerialTest
     {
         MockSerial mock_serial;
 
-        TEST_ASSERT_EQUAL_STRING("", mock_serial.getRxBuffer().c_str());
+        TEST_ASSERT_EQUAL_STRING("", mock_serial.popRxBuffer().c_str());
     }
 
     void test_MockSerial_SetRxBufferToGivenData(void)
@@ -70,7 +70,7 @@ namespace MockSerialTest
         MockSerial mock_serial;
         mock_serial.addRxContents("OK");
 
-        TEST_ASSERT_EQUAL_STRING("OK", mock_serial.getRxBuffer().c_str());
+        TEST_ASSERT_EQUAL_STRING("OK", mock_serial.popRxBuffer().c_str());
     }
     void test_MockSerial_ReducesRxBufferSizeByOneEverytimeStreamReadIsCalled(void)
     {
@@ -79,13 +79,13 @@ namespace MockSerialTest
         mock_serial.addRxContents("data");
         mock_serial.begin();
         TEST_ASSERT_EQUAL_CHAR('d', stream->read());
-        TEST_ASSERT_EQUAL(3, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL(3, mock_serial.popRxBuffer().length());
         TEST_ASSERT_EQUAL_CHAR('a', stream->read());
-        TEST_ASSERT_EQUAL(2, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL(2, mock_serial.popRxBuffer().length());
         TEST_ASSERT_EQUAL_CHAR('t', stream->read());
-        TEST_ASSERT_EQUAL(1, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL(1, mock_serial.popRxBuffer().length());
         TEST_ASSERT_EQUAL_CHAR('a', stream->read());
-        TEST_ASSERT_EQUAL(0, mock_serial.getRxBuffer().length());
+        TEST_ASSERT_EQUAL(0, mock_serial.popRxBuffer().length());
     }
 
     void test_MockSerial_ReturnsRxBufferSizeWhenSerialAvailableIsCalled()

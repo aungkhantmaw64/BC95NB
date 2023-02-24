@@ -48,7 +48,7 @@ public:
     {
         _txBuffer = "";
     }
-    String getRxBuffer(void)
+    String popRxBuffer(void)
     {
         return _rxBuffer;
     }
