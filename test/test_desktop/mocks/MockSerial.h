@@ -17,6 +17,7 @@ public:
     String getRxContent(void);
     void cleanTxBuffer(void);
     void setRxContent(const char *str);
+    void defineCMDs(const char *cmd, const char *resp);
 
 private:
     String _txBuffer;
@@ -24,6 +25,8 @@ private:
     std::map<String, String> _cmdDict;
 
     char _mockRead(void);
+    int _mockPrint(const char *str);
+    int _mockAvailable(void);
 };
 
 MockSerial ::MockSerial()
@@ -43,15 +46,13 @@ void MockSerial::begin()
 {
     When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)))
         .AlwaysDo([this](const char *str) -> int
-                  { 
-                      _txBuffer += String(str) ;
-                      return strlen(str); });
+                  { return _mockPrint(str); });
     When(Method(ArduinoFake(Stream), read))
         .AlwaysDo([this]() -> char
                   { return _mockRead(); });
     When(Method(ArduinoFake(Stream), available))
         .AlwaysDo([this]() -> int
-                  { return _rxBuffer.length(); });
+                  { return _mockAvailable(); });
     When(Method(ArduinoFake(Stream), flush))
         .AlwaysReturn();
 }
@@ -75,6 +76,16 @@ void MockSerial::setRxContent(const char *str)
     _rxBuffer = String(str);
 }
 
+int MockSerial::_mockPrint(const char *str)
+{
+    _txBuffer += String(str);
+    return strlen(str);
+}
+
+int MockSerial::_mockAvailable(void)
+{
+    return _rxBuffer.length();
+}
 char MockSerial::_mockRead()
 {
     if (_rxBuffer.length() > 0)
@@ -85,4 +96,10 @@ char MockSerial::_mockRead()
     }
     return -1;
 }
+
+void MockSerial::defineCMDs(const char *cmd, const char *resp)
+{
+    _cmdDict.insert({String(cmd), String(resp)});
+}
+
 #endif
