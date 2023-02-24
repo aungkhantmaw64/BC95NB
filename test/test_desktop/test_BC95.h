@@ -18,14 +18,14 @@ extern const unsigned long initTime;
 extern const unsigned long timeStep;
 namespace BC95Test
 {
-    void prvEnableMocks(void)
+    void _enableMocks(void)
     {
         mockSerial->begin();
         mockClock->begin();
     }
     void setExpectedResponse(const char *expected)
     {
-        prvEnableMocks();
+        _enableMocks();
         mockSerial->setRxBuffer(expected);
     }
 
@@ -83,7 +83,7 @@ namespace BC95Test
     void test_BC95_ReceivesValidResponse(void)
     {
         const char *expected = "\r\nAT\r\n\r\nOK\r\n";
-        prvEnableMocks();
+        _enableMocks();
 
         String buffer;
         driverUnderTest->send("AT");
