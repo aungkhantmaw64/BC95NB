@@ -62,30 +62,30 @@ namespace MockSerialTest
     {
         MockSerial mock_serial;
 
-        TEST_ASSERT_EQUAL_STRING("", mock_serial.popRxBuffer().c_str());
+        TEST_ASSERT_EQUAL_STRING("", mock_serial.getRxContent().c_str());
     }
 
     void test_MockSerial_SetRxBufferToGivenData(void)
     {
         MockSerial mock_serial;
-        mock_serial.addRxContents("OK");
+        mock_serial.setRxContent("OK");
 
-        TEST_ASSERT_EQUAL_STRING("OK", mock_serial.popRxBuffer().c_str());
+        TEST_ASSERT_EQUAL_STRING("OK", mock_serial.getRxContent().c_str());
     }
     void test_MockSerial_ReducesRxBufferSizeByOneEverytimeStreamReadIsCalled(void)
     {
         MockSerial mock_serial;
         Stream *stream = ArduinoFakeMock(Stream);
-        mock_serial.addRxContents("data");
+        mock_serial.setRxContent("data");
         mock_serial.begin();
         TEST_ASSERT_EQUAL_CHAR('d', stream->read());
-        TEST_ASSERT_EQUAL(3, mock_serial.popRxBuffer().length());
+        TEST_ASSERT_EQUAL(3, mock_serial.getRxContent().length());
         TEST_ASSERT_EQUAL_CHAR('a', stream->read());
-        TEST_ASSERT_EQUAL(2, mock_serial.popRxBuffer().length());
+        TEST_ASSERT_EQUAL(2, mock_serial.getRxContent().length());
         TEST_ASSERT_EQUAL_CHAR('t', stream->read());
-        TEST_ASSERT_EQUAL(1, mock_serial.popRxBuffer().length());
+        TEST_ASSERT_EQUAL(1, mock_serial.getRxContent().length());
         TEST_ASSERT_EQUAL_CHAR('a', stream->read());
-        TEST_ASSERT_EQUAL(0, mock_serial.popRxBuffer().length());
+        TEST_ASSERT_EQUAL(0, mock_serial.getRxContent().length());
     }
 
     void test_MockSerial_ReturnsRxBufferSizeWhenSerialAvailableIsCalled()
@@ -94,9 +94,9 @@ namespace MockSerialTest
         Stream *stream = ArduinoFakeMock(Stream);
         mock_serial.begin();
         TEST_ASSERT_EQUAL(0, stream->available());
-        mock_serial.addRxContents("OK");
+        mock_serial.setRxContent("OK");
         TEST_ASSERT_EQUAL(2, stream->available());
-        mock_serial.addRxContents("Hello");
+        mock_serial.setRxContent("Hello");
         TEST_ASSERT_EQUAL(5, stream->available());
     }
 

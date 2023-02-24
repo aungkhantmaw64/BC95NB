@@ -25,7 +25,7 @@ namespace BC95Test
     }
     void _expectResponse(const char *expected)
     {
-        mockSerial->addRxContents(expected);
+        mockSerial->setRxContent(expected);
     }
 
     void test_BC95_SetsResetPinToOutputAndLowAfterBegin(void)

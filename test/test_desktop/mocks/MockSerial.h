@@ -3,17 +3,20 @@
 
 #include <ArduinoFake.h>
 #include <cstring>
+#include <map>
 
 using namespace fakeit;
 
 class MockSerial
 {
 public:
-    MockSerial()
+    MockSerial() : _singleMode(true)
     {
+
         _txBuffer.reserve(100);
         _rxBuffer.reserve(100);
     }
+
     ~MockSerial()
     {
         _txBuffer = "";
@@ -28,12 +31,7 @@ public:
                       return strlen(str); });
         When(Method(ArduinoFake(Stream), read))
             .AlwaysDo([this]() -> char
-                      {if(_rxBuffer.length()>0){
-                            char byte = _rxBuffer.charAt(0);
-                            _rxBuffer.remove(0, 1);
-                            return byte;
-                            }
-                        return -1; });
+                      { return _mockRead(); });
         When(Method(ArduinoFake(Stream), available))
             .AlwaysDo([this]() -> int
                       { return _rxBuffer.length(); });
@@ -48,18 +46,31 @@ public:
     {
         _txBuffer = "";
     }
-    String popRxBuffer(void)
+    String getRxContent(void)
     {
         return _rxBuffer;
     }
-    void addRxContents(const char *str)
+    void setRxContent(const char *str)
     {
         _rxBuffer = String(str);
+    }
+
+    char _mockRead()
+    {
+        if (_rxBuffer.length() > 0)
+        {
+            char byte = _rxBuffer.charAt(0);
+            _rxBuffer.remove(0, 1);
+            return byte;
+        }
+        return -1;
     }
 
 private:
     String _txBuffer;
     String _rxBuffer;
+    std::map<String, String> _cmdDict;
+    bool _singleMode;
 };
 
 #endif
