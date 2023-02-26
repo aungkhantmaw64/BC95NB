@@ -3,6 +3,10 @@
 [![License: MIT](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/aungkhantmaw64/BC95NB/blob/main/LICENSE)
 
 ## EXAMPLES
+
+Name: ConnectToNetwork.ino
+
+Description: This example shows how to use the API to establish a connection between the modem and the base station.
 ```CPP
 #include <Arduino.h>
 #include "BC95NB.h"
