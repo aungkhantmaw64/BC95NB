@@ -3,6 +3,7 @@
 #include "test_BC95.h"
 #include "test_MockSerial.h"
 #include "test_MockClock.h"
+#include "test_NBClass.h"
 
 #define RUN_TEST_GROUP(TEST)                                                           \
     if (!std::getenv("TEST_GROUP") || (strcmp(#TEST, std::getenv("TEST_GROUP")) == 0)) \
@@ -43,6 +44,7 @@ int main(int argc, char **argv)
     RUN_TEST_GROUP(MockClockTest);
     RUN_TEST_GROUP(MockSerialTest);
     RUN_TEST_GROUP(BC95Test);
+    RUN_TEST_GROUP(NBClassTest);
     UNITY_END();
     return 0;
 }
