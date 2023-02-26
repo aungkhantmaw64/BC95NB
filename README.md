@@ -4,6 +4,19 @@
 
 ## EXAMPLES
 
+*Note: As BC95 Modem uses UART Protocol, you may have to specify which UART port (Serial, Serial2, etc.) you want to use in configNB.h as follows.*
+
+```CPP
+#ifndef D_CONFIGNB_H
+#define D_CONFIGNB_H
+#include <Arduino.h>
+
+#define MODEM_UART Serial // Specify your uart here
+#define MODEM_RESET_PIN 18 // Hardware reset pin
+#endif
+```
+*Also don't forget to initialize your serial port with the right baudrate, 9600, which is the default baud for most BC95 series.*
+
 Name: ConnectToNetwork.ino
 
 Description: This example shows how to use the API to establish a connection between the modem and the base station.
