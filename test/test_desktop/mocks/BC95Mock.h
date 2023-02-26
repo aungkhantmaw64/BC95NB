@@ -19,16 +19,19 @@ public:
 
     String getLastCmd(void);
     void setResponseStatus(int status);
+    void setResponse(const char *resp);
 
 private:
     String _lastCmd;
     int _respStatus;
+    String _resp;
 };
 
 BC95Mock::BC95Mock()
     : _lastCmd(""),
       _respStatus(MODEM_STATUS_UNKNOWN)
 {
+    _resp.reserve(100);
 }
 
 BC95Mock::~BC95Mock()
@@ -48,6 +51,10 @@ void BC95Mock::send(const String &cmd)
 }
 int BC95Mock::waitForResponse(unsigned long timeout_ms, String *buffer)
 {
+    if (buffer)
+    {
+        *buffer = _resp;
+    }
     return _respStatus;
 }
 bool BC95Mock::isReady()
@@ -81,4 +88,9 @@ String BC95Mock::getLastCmd(void)
 void BC95Mock::setResponseStatus(int status)
 {
     _respStatus = status;
+}
+
+void BC95Mock::setResponse(const char *resp)
+{
+    _resp = String(resp);
 }
