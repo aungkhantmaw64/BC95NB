@@ -20,8 +20,7 @@ public:
     virtual void begin() = 0;
     virtual void send(const char *cmd) = 0;
     virtual void send(const String &cmd) = 0;
-    virtual int waitForResponse(unsigned long timeout_ms, String *buffer) = 0;
-
+    virtual int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) = 0;
     //==================Get Modem's Information=====================//
     virtual bool isReady() = 0;
     virtual String getManufacturerRevision() = 0;

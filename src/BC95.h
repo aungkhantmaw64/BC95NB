@@ -29,7 +29,6 @@ private:
     int _resetPin;
     String _lastCmd;
     String _lastResp;
-
     String extractCode(const char *prefix, int codeLength);
 };
 
