@@ -1,9 +1,15 @@
 #include "BC95NB.h"
+#include "configNB.h"
 
 NBClass::NBClass(Modem *modem)
     : _modem(modem),
       _state(NB_STATE_DISABLING_AUTOCONECT),
       _networkStatus(NB_NETWORK_NOT_REGISTERED)
+{
+}
+
+NBClass::NBClass()
+    : NBClass(new BC95(&MODEM_UART, MODEM_RESET_PIN))
 {
 }
 
@@ -132,3 +138,5 @@ int NBClass::begin(int band)
     }
     return _networkStatus;
 }
+
+NBClass BC95NB;

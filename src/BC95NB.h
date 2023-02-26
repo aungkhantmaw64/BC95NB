@@ -30,6 +30,7 @@ enum
 class NBClass
 {
 public:
+    NBClass();
     NBClass(Modem *modem);
     ~NBClass();
     int begin(int band);
@@ -40,4 +41,5 @@ private:
     int _networkStatus;
 };
 
+extern NBClass BC95NB;
 #endif
