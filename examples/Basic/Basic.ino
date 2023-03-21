@@ -1,23 +1,23 @@
-#include "BC95.h"
+#include "BC95NB.h"
 
 static const int reset_pin = 18;
 static BC95 modem(&Serial2, reset_pin);
-static String response;
+static NBClass nb(&modem);
 
 void setup()
 {
     Serial.begin(9600);
     Serial2.begin(9600);
-    modem.send("AT");
-    if (modem.waitForResponse(300, &response) == MODEM_STATUS_VALID_RESPONSE)
+    Serial.print("\n\nMODEM>> Establishing a connection with the NB-IoT network");
+    while (nb.begin() != NB_NETWORK_ATTACHED)
     {
-        Serial.println(response);
+        Serial.print(".");
+        delay(100);
     }
-    modem.send("ATI");
-    if (modem.waitForResponse(300, &response) == MODEM_STATUS_VALID_RESPONSE)
-    {
-        Serial.println(response);
-    }
+    Serial.println();
+    Serial.println("MODEM>> Connection Established.");
+    Serial.println("MODEM>> IMSI: " + nb.getIMSI());
+    Serial.println("MODEM>> IP Address: " + nb.getIPAddress());
 }
 
 void loop()
