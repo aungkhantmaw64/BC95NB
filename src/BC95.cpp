@@ -89,7 +89,6 @@ int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
     {
         *buffer = response_;
         buffer->replace(_lastCmd, "");
-        buffer->trim();
     }
     if (response_.indexOf("OK") != -1)
     {
