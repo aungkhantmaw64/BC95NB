@@ -5,7 +5,6 @@
 #include <unity.h>
 
 using namespace fakeit;
-
 class MockClock
 {
 public:
@@ -32,5 +31,4 @@ private:
     unsigned long _initTime;
     unsigned long _increment;
 };
-
 #endif
