@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #define DEFAULT_REBOOT_TIME_MS 3000
+#define BUFF_SIZE 300
 
 BC95::BC95(Stream *stream, const int resetPin)
     : _stream(stream),
@@ -38,6 +39,16 @@ void BC95::send(const char *cmd)
 void BC95::send(const String &cmd)
 {
     this->send(cmd.c_str());
+}
+
+void BC95::sendf(const char *fmt, ...)
+{
+    char buf[BUFSIZ];
+    va_list ap;
+    va_start((ap), (fmt));
+    vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+    va_end(ap);
+    send(buf);
 }
 
 int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)

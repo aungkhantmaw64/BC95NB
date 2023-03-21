@@ -2,6 +2,7 @@
 #define D_MODEM_H
 
 #include <Arduino.h>
+#include <stdarg.h>
 
 enum
 {
@@ -25,6 +26,7 @@ public:
     virtual void begin() = 0;
     virtual void send(const char *cmd) = 0;
     virtual void send(const String &cmd) = 0;
+    virtual void sendf(const char *fmt, ...) = 0;
     virtual int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) = 0;
     virtual bool isReady() = 0;
 };

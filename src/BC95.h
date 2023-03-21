@@ -12,6 +12,7 @@ public:
     void begin() override;
     void send(const char *cmd) override;
     void send(const String &cmd) override;
+    void sendf(const char *fmt, ...) override;
     int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) override;
 
     bool isReady();
