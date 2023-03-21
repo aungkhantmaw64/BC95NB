@@ -6,7 +6,9 @@
 enum
 {
     NB_IDLE,
-    NB_MODEM_AWAKEN
+    NB_MODEM_AWAKEN,
+    NB_NETWORK_REGISTERED,
+    NB_NETWORK_ATTACHED
 };
 
 class NBClass
