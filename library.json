@@ -1,0 +1,15 @@
+{
+    "name": "BC95NB",
+    "keywords": "bc95,nbiot, mqtt, m2m, iot",
+    "description": "BC95NB",
+    "version": "1.0",
+    "exclude": "tests",
+    "examples": "examples/*/*.ino",
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "espressif8266",
+        "espressif32"
+    ]
+}
+
