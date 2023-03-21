@@ -6,10 +6,11 @@
 
 BC95::BC95(Stream *stream, const int resetPin)
     : _stream(stream),
-      _resetPin(resetPin)
+      _resetPin(resetPin),
+      state_(AT_STATE_READING)
 {
     _lastCmd.reserve(100);
-    _lastResp.reserve(100);
+    response_.reserve(100);
 }
 
 BC95::~BC95()
@@ -39,48 +40,66 @@ void BC95::send(const String &cmd)
     this->send(cmd.c_str());
 }
 
-static int checkResponseStatus(String *buffer)
-{
-    if (buffer->length() == 0)
-        return MODEM_STATUS_TIMEOUT_ERROR;
-    else if (buffer->lastIndexOf("+CME ERROR:") != -1)
-        return MODEM_STATUS_UE_ERROR;
-    else if (buffer->lastIndexOf("ERROR") != -1)
-        return MODEM_STATUS_INVALID_PARAMETERS;
-    else if (buffer->lastIndexOf("OK") != -1)
-        return MODEM_STATUS_VALID_RESPONSE;
-    else if (buffer->lastIndexOf("REBOOT") != -1)
-        return MODEM_STATUS_REBOOTED;
-    else if (buffer->endsWith("\r\n"))
-        return MODEM_STATUS_URC_EVENT;
-    else
-        return MODEM_STATUS_UNKNOWN;
-}
-
 int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
 {
-    int status = MODEM_STATUS_UNKNOWN;
-    _lastResp = "";
+    response_ = "";
     unsigned long startTime = millis();
-    while ((millis() - startTime) < timeout_ms)
+    while (millis() - startTime < timeout_ms)
     {
-        while (_stream->available() > 0)
+        switch (state_)
         {
-            char byte = _stream->read();
-            _lastResp += byte;
+        case AT_STATE_READING:
+        {
+            if (_stream->available() > 0)
+            {
+                char byte_ = (char)_stream->read();
+                response_ += byte_;
+                if (byte_ == '\n')
+                {
+                    state_ = AT_STATE_IDENTIFYING_RESPONSE;
+                }
+            }
+            break;
+        }
+        case AT_STATE_IDENTIFYING_RESPONSE:
+        {
+            if (!response_.startsWith("\r\nAT") && response_.endsWith("\r\n"))
+            {
+                state_ = AT_STATE_HANDLING_URC;
+            }
+            else
+            {
+                state_ = AT_STATE_READING;
+            }
+            break;
+        }
+        case AT_STATE_HANDLING_URC:
+        {
+            /* code for urc handling*/
+            state_ = AT_STATE_READING;
+            break;
+        }
+        default:
+            break;
         }
     }
-    status = checkResponseStatus(&_lastResp);
-    if (_lastResp.startsWith(_lastCmd, _lastCmd.length()))
-    {
-        _lastResp.replace(_lastCmd, "");
-        _lastResp.trim();
-    }
+    if (response_.length() == 0)
+        return MODEM_STATUS_TIMEOUT_ERROR;
     if (buffer)
     {
-        *buffer = _lastResp;
+        *buffer = response_;
+        buffer->replace(_lastCmd, "");
+        buffer->trim();
     }
-    return status;
+    if (response_.indexOf("OK") != -1)
+    {
+        return MODEM_STATUS_VALID_RESPONSE;
+    }
+    if (response_.indexOf("ERROR") != -1)
+    {
+        return MODEM_STATUS_INVALID_PARAMETERS;
+    }
+    return MODEM_STATUS_UNKNOWN;
 }
 
 bool BC95::isReady(void)
@@ -89,29 +108,16 @@ bool BC95::isReady(void)
     return (waitForResponse(300) == MODEM_STATUS_VALID_RESPONSE);
 }
 
-String BC95::extractCode(const char *prefix, int codeSize)
-{
-    String code;
-    code.reserve(codeSize);
-    int status = waitForResponse(300, &code);
-    if (status == MODEM_STATUS_VALID_RESPONSE)
-    {
-        int pos = code.indexOf(prefix) + 1;
-        code = code.substring(pos, pos + codeSize);
-    }
-    return code;
-}
-
 String BC95::getIMEI(void)
 {
     send("AT+CGSN=1");
-    return extractCode("+CGSN:", 15);
+    return "";
 }
 
 String BC95::getICCID(void)
 {
     send("AT+NCCID");
-    return extractCode("+NCCID:", 20);
+    return "";
 }
 
 String BC95::getManufacturerRevision()
@@ -129,11 +135,8 @@ String BC95::getRSSI()
     return "";
 }
 
-int BC95::reset(void)
+int BC95::reset()
 {
-    send("AT+NRB");
-    int status = waitForResponse(1000);
-    if (status != MODEM_STATUS_REBOOTED)
-        return -1;
-    return 0;
+
+    return -1;
 }
