@@ -18,11 +18,35 @@ int NBClass::begin()
     case NB_IDLE:
     {
         modem_->send("AT+CFUN?");
-        if (modem_->waitForResponse(300, &buffer_))
+        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
         {
             if (buffer_.indexOf("+CFUN:1") != -1)
             {
                 connectionState_ = NB_MODEM_AWAKEN;
+            }
+        }
+        break;
+    }
+    case NB_MODEM_AWAKEN:
+    {
+        modem_->send("AT+CEREG?");
+        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+        {
+            if (buffer_.indexOf("+CEREG:0,1") != -1)
+            {
+                connectionState_ = NB_NETWORK_REGISTERED;
+            }
+        }
+        break;
+    }
+    case NB_NETWORK_REGISTERED:
+    {
+        modem_->send("AT+CGATT?");
+        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+        {
+            if (buffer_.indexOf("+CGATT:1") != -1)
+            {
+                connectionState_ = NB_NETWORK_ATTACHED;
             }
         }
         break;
