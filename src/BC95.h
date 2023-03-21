@@ -14,15 +14,9 @@ public:
     void send(const String &cmd) override;
     int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) override;
 
-    //==================Get Modem's Information=====================//
     bool isReady();
     int hardReset(bool inverted);
     int reset();
-    String getManufacturerRevision() override;
-    String getIMEI() override;
-    String getICCID() override;
-    String getIMSI() override;
-    String getRSSI() override;
 
 private:
     Stream *_stream;
