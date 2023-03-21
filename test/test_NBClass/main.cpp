@@ -1,7 +1,7 @@
 #include <ArduinoFake.h>
 #include <unity.h>
 #include "MockBC95.h"
-#include "NB.h"
+#include "BC95NB.h"
 
 MockBC95 modemMock;
 NBClass NB(&modemMock);
