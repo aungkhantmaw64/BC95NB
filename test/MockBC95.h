@@ -12,6 +12,7 @@ public:
     void begin() override;
     void send(const char *cmd) override;
     void send(const String &cmd) override;
+    void sendf(const char *fmt, ...) override;
     int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) override;
     ;
     bool isReady() override;
@@ -37,6 +38,10 @@ void MockBC95::send(const char *cmd)
 }
 
 void MockBC95::send(const String &cmd)
+{
+}
+
+void MockBC95::sendf(const char *fmt, ...)
 {
 }
 
