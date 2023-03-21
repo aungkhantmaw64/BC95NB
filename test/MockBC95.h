@@ -1,101 +1,72 @@
-#ifndef D_MOCK_BC95_H
-#define D_MOCK_BC95_H
+#ifndef D_MOCKBC95_H
+#define D_MOCKBC95_H
 
-#include <BC95.h>
+#include "Modem.h"
+#include <queue>
 
-class BC95Mock : public Modem
+class MockBC95 : public Modem
 {
 public:
-    BC95Mock();
-    ~BC95Mock();
+    MockBC95(){};
+    ~MockBC95(){};
     void begin() override;
     void send(const char *cmd) override;
     void send(const String &cmd) override;
     int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) override;
-    //==================Get Modem's Information=====================//
+    ;
     bool isReady() override;
-    String getManufacturerRevision() override;
-    String getIMEI() override;
-    String getICCID() override;
-    String getIMSI() override;
-    String getRSSI() override;
 
-    String getLastCmd(void);
-    void setResponseStatus(int status);
-    void setResponse(const char *resp);
+    /* Mock functions */
+    void responseExpect(const char *expectedBuffer, int expectedStatus);
 
 private:
-    String _lastCmd;
-    int _respStatus;
-    String _resp;
+    void bufferExpect(const char *expectedBuffer);
+    void statusExpect(int expectedStatus);
+
+private:
+    std::queue<String> buffers_;
+    std::queue<int> responseStatuses_;
 };
 
-BC95Mock::BC95Mock()
-    : _lastCmd(""),
-      _respStatus(MODEM_STATUS_UNKNOWN)
-{
-    _resp.reserve(100);
-}
-
-BC95Mock::~BC95Mock()
+void MockBC95::begin()
 {
 }
 
-void BC95Mock::begin()
+void MockBC95::send(const char *cmd)
 {
 }
 
-void BC95Mock::send(const char *cmd)
+void MockBC95::send(const String &cmd)
 {
-    _lastCmd = String(cmd) + "\r";
-}
-void BC95Mock::send(const String &cmd)
-{
-}
-int BC95Mock::waitForResponse(unsigned long timeout_ms, String *buffer)
-{
-    if (buffer)
-    {
-        *buffer = _resp;
-    }
-    return _respStatus;
-}
-bool BC95Mock::isReady()
-{
-    return false;
-}
-String BC95Mock::getManufacturerRevision()
-{
-    return "";
-}
-String BC95Mock::getIMEI()
-{
-    return "";
-}
-String BC95Mock::getICCID()
-{
-    return "";
-};
-String BC95Mock::getIMSI()
-{
-    return "";
-};
-String BC95Mock::getRSSI()
-{
-    return "";
-}
-String BC95Mock::getLastCmd(void)
-{
-    return _lastCmd;
-}
-void BC95Mock::setResponseStatus(int status)
-{
-    _respStatus = status;
 }
 
-void BC95Mock::setResponse(const char *resp)
+int MockBC95::waitForResponse(unsigned long timeout_ms, String *buffer)
 {
-    _resp = String(resp);
+    int status = responseStatuses_.front();
+    responseStatuses_.pop();
+    *buffer = buffers_.front();
+    buffers_.pop();
+    return status;
+}
+
+bool MockBC95::isReady()
+{
+}
+
+void MockBC95::bufferExpect(const char *expectedBuffer)
+{
+    buffers_.push(String(expectedBuffer));
+}
+
+void MockBC95::statusExpect(int status)
+{
+    responseStatuses_.push(status);
+}
+
+void MockBC95::responseExpect(const char *expectedBuffer, int expectedStatus)
+{
+    bufferExpect(expectedBuffer);
+    statusExpect(expectedStatus);
 }
 
 #endif

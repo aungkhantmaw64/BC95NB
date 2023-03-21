@@ -89,7 +89,6 @@ int BC95::waitForResponse(unsigned long timeout_ms, String *buffer)
     {
         *buffer = response_;
         buffer->replace(_lastCmd, "");
-        buffer->trim();
     }
     if (response_.indexOf("OK") != -1)
     {
@@ -106,33 +105,6 @@ bool BC95::isReady(void)
 {
     send("AT");
     return (waitForResponse(300) == MODEM_STATUS_VALID_RESPONSE);
-}
-
-String BC95::getIMEI(void)
-{
-    send("AT+CGSN=1");
-    return "";
-}
-
-String BC95::getICCID(void)
-{
-    send("AT+NCCID");
-    return "";
-}
-
-String BC95::getManufacturerRevision()
-{
-    return "";
-}
-
-String BC95::getIMSI()
-{
-    return "";
-}
-
-String BC95::getRSSI()
-{
-    return "";
 }
 
 int BC95::reset()
