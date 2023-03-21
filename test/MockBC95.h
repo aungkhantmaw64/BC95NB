@@ -1,3 +1,6 @@
+#ifndef D_MOCK_BC95_H
+#define D_MOCK_BC95_H
+
 #include <BC95.h>
 
 class BC95Mock : public Modem
@@ -94,3 +97,5 @@ void BC95Mock::setResponse(const char *resp)
 {
     _resp = String(resp);
 }
+
+#endif
