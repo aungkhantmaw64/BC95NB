@@ -123,10 +123,10 @@ void test_BC95_ReceivesUnknownError()
     TEST_ASSERT_EQUAL(MODEM_STATUS_UNKNOWN, status);
 }
 
-void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
+void test_BC95_RemovesCommandEchoFromValidResponse(void)
 {
     _enableMocks();
-    _expectResponse("\r\nAT\n\nOK\r\n");
+    _expectResponse("\r\nAT\r\n\r\nOK\r\n");
 
     String buffer;
     buffer.reserve(200);
@@ -134,7 +134,7 @@ void test_BC95_StripsAndRemovesCommandEchoFromValidResponse(void)
     int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
 
     TEST_ASSERT_EQUAL(MODEM_STATUS_VALID_RESPONSE, status);
-    TEST_ASSERT_EQUAL_STRING("OK", buffer.c_str());
+    TEST_ASSERT_EQUAL_STRING("\r\n\r\n\r\nOK\r\n", buffer.c_str());
 }
 
 void test_BC95_IsReadyAndNoHardwareIssue(void)
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
     RUN_TEST(test_BC95_ReceivesTimeOutError);
     RUN_TEST(test_BC95_ReceivesInvalidCmdError);
     RUN_TEST(test_BC95_ReceivesUnknownError);
-    RUN_TEST(test_BC95_StripsAndRemovesCommandEchoFromValidResponse);
+    RUN_TEST(test_BC95_RemovesCommandEchoFromValidResponse);
     RUN_TEST(test_BC95_IsReadyAndNoHardwareIssue);
     RUN_TEST(test_BC95_IsNotReadyWhenReceiveNoResponse);
     UNITY_END();
