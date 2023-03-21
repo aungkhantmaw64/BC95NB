@@ -27,9 +27,9 @@ public:
 private:
     Stream *_stream;
     int _resetPin;
+    int state_;
     String _lastCmd;
-    String _lastResp;
-    String extractCode(const char *prefix, int codeLength);
+    String response_;
 };
 
 #endif

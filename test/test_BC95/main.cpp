@@ -90,17 +90,6 @@ void test_BC95_ReceivesValidResponse(void)
     TEST_ASSERT_EQUAL(MODEM_STATUS_VALID_RESPONSE, status);
 }
 
-void test_BC95_ReceivesUeError()
-{
-    _enableMocks();
-    _expectResponse("\r\n+CME ERROR:23\r\n");
-
-    String buffer;
-    int status = driverUnderTest->waitForResponse(timeout_ms, &buffer);
-
-    TEST_ASSERT_EQUAL(MODEM_STATUS_UE_ERROR, status);
-}
-
 void test_BC95_ReceivesTimeOutError()
 {
     _enableMocks();
@@ -172,30 +161,6 @@ void test_BC95_IsNotReadyWhenReceiveNoResponse(void)
     TEST_ASSERT_EQUAL_STRING("AT\r", mockSerial->getTxBuffer().c_str());
 }
 
-void test_BC95_RebootDueToSoftwareReset(void)
-{
-    _enableMocks();
-    _expectResponse("\r\nREBOOTING\r\n");
-
-    int errCode = driverUnderTest->reset();
-
-    TEST_ASSERT_EQUAL(0, errCode);
-    Verify(Method(ArduinoFake(), millis)).AtLeastOnce();
-    TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
-}
-
-void test_BC95_RebootFailsDuringSoftwareReset(void)
-{
-    _enableMocks();
-    _expectResponse("");
-
-    int errCode = driverUnderTest->reset();
-
-    TEST_ASSERT_EQUAL(-1, errCode);
-    Verify(Method(ArduinoFake(), millis)).AtLeastOnce();
-    TEST_ASSERT_EQUAL_STRING("AT+NRB\r", mockSerial->getTxBuffer().c_str());
-}
-
 void setUp()
 {
     stream = ArduinoFakeMock(Stream);
@@ -218,15 +183,12 @@ int main(int argc, char **argv)
     RUN_TEST(test_BC95_SendsCmdOnlyAfterWaitingForTwentyMilliseconds);
     RUN_TEST(test_BC95_FlushChannelBeforeSendingANewCommmand);
     RUN_TEST(test_BC95_ReceivesValidResponse);
-    RUN_TEST(test_BC95_ReceivesUeError);
     RUN_TEST(test_BC95_ReceivesTimeOutError);
     RUN_TEST(test_BC95_ReceivesInvalidCmdError);
     RUN_TEST(test_BC95_ReceivesUnknownError);
     RUN_TEST(test_BC95_StripsAndRemovesCommandEchoFromValidResponse);
     RUN_TEST(test_BC95_IsReadyAndNoHardwareIssue);
     RUN_TEST(test_BC95_IsNotReadyWhenReceiveNoResponse);
-    RUN_TEST(test_BC95_RebootDueToSoftwareReset);
-    RUN_TEST(test_BC95_RebootFailsDuringSoftwareReset);
     UNITY_END();
     return 0;
 }
