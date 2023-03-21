@@ -46,6 +46,19 @@ int NBClass::begin()
         {
             if (buffer_.indexOf("+CGATT:1") != -1)
             {
+                modem_->send("AT+CIMI");
+                modem_->waitForResponse(300, &buffer_);
+                buffer_.replace("OK", "");
+                buffer_.trim();
+                imsi_ = buffer_;
+
+                modem_->send("AT+CGPADDR");
+                modem_->waitForResponse(300, &buffer_);
+                buffer_.replace("OK", "");
+                buffer_.replace("+CGPADDR:", "");
+                buffer_.trim();
+                ip_ = buffer_;
+
                 connectionState_ = NB_NETWORK_ATTACHED;
             }
         }
@@ -59,4 +72,15 @@ int NBClass::begin()
 
 int NBClass::begin(int band)
 {
+    return NB_IDLE;
+}
+
+String NBClass::getIMSI(void)
+{
+    return imsi_;
+}
+
+String NBClass::getIPAddress(void)
+{
+    return ip_;
 }

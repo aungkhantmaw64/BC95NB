@@ -18,11 +18,15 @@ public:
     ~NBClass();
     int begin();
     int begin(int band);
+    String getIPAddress();
+    String getIMSI();
 
 private:
     Modem *modem_;
     int connectionState_;
     String buffer_;
+    String ip_;
+    String imsi_;
 };
 
 #endif
