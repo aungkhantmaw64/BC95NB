@@ -17,8 +17,24 @@ enum
 class BC95MQTT
 {
 public:
+    /**
+     * @brief Construct a new BC95MQTT object
+     *
+     * @param modem
+     */
     BC95MQTT(Modem *modem);
+    /**
+     * @brief Destroy the BC95MQTT object
+     *
+     */
     ~BC95MQTT();
+    /**
+     * @brief
+     *
+     * @param host
+     * @param port
+     * @return int
+     */
     int begin(const char *host, int port);
 
 private:
