@@ -51,6 +51,14 @@ public:
     /**
      * @brief
      *
+     * @param primary_addr
+     * @param secondary_addr
+     * @return int
+     */
+    int configDNSAddress(const char *primary_addr, const char *secondary_addr);
+    /**
+     * @brief
+     *
      * @return int
      */
     int end(void);

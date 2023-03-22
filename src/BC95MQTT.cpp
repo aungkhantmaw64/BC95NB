@@ -33,12 +33,20 @@ int BC95MQTT::begin(const char *host, int port)
 
 int BC95MQTT::hasInstance(void)
 {
-    modem_->sendf("AT+QMTOPEN?");
+    modem_->send("AT+QMTOPEN?");
     if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
     {
         if (buffer_.indexOf("+QMTOPEN:") != -1)
             return 1;
     }
+    return 0;
+}
+
+int BC95MQTT::configDNSAddress(const char *primary_addr, const char *secondary_addr)
+{
+    modem_->sendf("AT+QIDNSCFG=%s,%s", primary_addr, secondary_addr);
+    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+        return 1;
     return 0;
 }
 
