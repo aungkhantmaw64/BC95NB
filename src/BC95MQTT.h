@@ -14,6 +14,12 @@ enum
     MQTT_NETWORK_DISCONNECTED
 };
 
+enum
+{
+    MQTT_NETWORK_CLOSE_FAILED = -1,
+    MQTT_NETWORK_CLOSED
+};
+
 class BC95MQTT
 {
 public:
@@ -36,6 +42,18 @@ public:
      * @return int
      */
     int begin(const char *host, int port);
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int hasInstance(void);
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int end(void);
 
 private:
     Modem *modem_;

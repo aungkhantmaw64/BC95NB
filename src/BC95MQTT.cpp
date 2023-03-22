@@ -13,7 +13,7 @@ BC95MQTT::~BC95MQTT()
 int BC95MQTT::begin(const char *host, int port)
 {
     modem_->sendf("AT+QMTOPEN=0,\"%s\",%d", host, port);
-    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(1000, &buffer_))
+    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(10000, &buffer_))
     {
         if (buffer_.indexOf("+QMTOPEN:0,0") != -1)
             return MQTT_NETWORK_OPENED;
@@ -29,4 +29,26 @@ int BC95MQTT::begin(const char *host, int port)
             return MQTT_NETWORK_DISCONNECTED;
     }
     return MQTT_NETWORK_OPEN_FAILED;
+}
+
+int BC95MQTT::hasInstance(void)
+{
+    modem_->sendf("AT+QMTOPEN?");
+    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+    {
+        if (buffer_.indexOf("+QMTOPEN:") != -1)
+            return 1;
+    }
+    return 0;
+}
+
+int BC95MQTT::end(void)
+{
+    modem_->send("AT+QMTCLOSE=0");
+    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+    {
+        if (buffer_.indexOf("+QMTCLOSE:0,0") != -1)
+            return MQTT_NETWORK_CLOSED;
+    }
+    return MQTT_NETWORK_CLOSE_FAILED;
 }
