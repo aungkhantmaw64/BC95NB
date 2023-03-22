@@ -27,8 +27,22 @@ void test_BC95MQTT_begin()
     TEST_ASSERT_EQUAL(MQTT_NETWORK_DISCONNECTED, mqtt.begin("test.mosquitto.org", 8883));
 }
 
-void test_BC95MQTT_connect()
+void test_BC95MQTT_hasInstance()
 {
+    mock.responseExpect("\r\nOK\r\n\r\n+QMTOPEN:0,\"test.mosquitto.org\",1883",
+                        MODEM_STATUS_VALID_RESPONSE);
+    mock.responseExpect("\r\nOK\r\n",
+                        MODEM_STATUS_VALID_RESPONSE);
+    TEST_ASSERT_EQUAL(1, mqtt.hasInstance());
+    TEST_ASSERT_EQUAL(0, mqtt.hasInstance());
+}
+
+void test_BC95MQTT_end()
+{
+    mock.responseExpect("\r\nOK\r\n\r\n+QMTCLOSE:0,-1\r\n", MODEM_STATUS_VALID_RESPONSE);
+    mock.responseExpect("\r\nOK\r\n\r\n+QMTCLOSE:0,0\r\n", MODEM_STATUS_VALID_RESPONSE);
+    TEST_ASSERT_EQUAL(MQTT_NETWORK_CLOSE_FAILED, mqtt.end());
+    TEST_ASSERT_EQUAL(MQTT_NETWORK_CLOSED, mqtt.end());
 }
 
 void setUp()
@@ -44,7 +58,8 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
     RUN_TEST(test_BC95MQTT_begin);
-    RUN_TEST(test_BC95MQTT_connect);
+    RUN_TEST(test_BC95MQTT_hasInstance);
+    RUN_TEST(test_BC95MQTT_end);
     UNITY_END();
     return 0;
 }
