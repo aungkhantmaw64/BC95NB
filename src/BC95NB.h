@@ -15,11 +15,41 @@ enum
 class NBClass
 {
 public:
+    /**
+     * @brief Construct a new NBClass object
+     *
+     * @param modem
+     */
     NBClass(Modem *modem);
+    /**
+     * @brief Destroy the NBClass object
+     *
+     */
     ~NBClass();
+    /**
+     * @brief
+     *
+     * @return int
+     */
     int begin();
+    /**
+     * @brief
+     *
+     * @param band
+     * @return int
+     */
     int begin(int band);
+    /**
+     * @brief
+     *
+     * @return String
+     */
     String getIPAddress();
+    /**
+     * @brief
+     *
+     * @return String
+     */
     String getIMSI();
 
 private:
