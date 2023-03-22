@@ -2,60 +2,82 @@
 [![Arduino CI](https://github.com/aungkhantmaw64/BC95NB/actions/workflows/workflow.yml/badge.svg)](https://github.com/aungkhantmaw64/BC95NB/actions)
 [![License: MIT](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/aungkhantmaw64/BC95NB/blob/main/LICENSE)
 
-## EXAMPLES
+## Introduction
+BC95 is a high-performance NB-IoT module with extremely low power consumption. The ultra-compact 23.6mm × 19.9mm ×
+2.2mm profile makes it a perfect choice for size sensitive applications. Designed to be compatible with Quectel GSM/GPRS
+M95 module in the compact and unified form factor, it provides a flexible and scalable platform for migrating from GSM/
+GPRS to NB-IoT networks.
+## Examples
 
-*Note: As BC95 Modem uses UART Protocol, you may have to specify which UART port (Serial, Serial2, etc.) you want to use in configNB.h as follows.*
+*Note: As BC95 Modem uses AT commands via UART Protocol, you may have to specify which UART port (Serial, Serial2, etc.)*
 
-```CPP
-#ifndef D_CONFIGNB_H
-#define D_CONFIGNB_H
-#include <Arduino.h>
-
-#define MODEM_UART Serial // Specify your uart here
-#define MODEM_RESET_PIN 18 // Hardware reset pin
-#endif
-```
 *Also don't forget to initialize your serial port with the right baudrate, 9600, which is the default baud for most BC95 series.*
 
-Name: ConnectToNetwork.ino
 
-Description: This example shows how to use the API to establish a connection between the modem and the base station.
+Name: SimpleMQTT.ino
+
+Description: This example shows how to use the API to establish a connection between the modem and the MQTT server.
 ```CPP
-#include <Arduino.h>
 #include "BC95NB.h"
+#include "BC95MQTT.h"
+
+static const char host[] = "test.mosquitto.org";
+static const int port = 1883;
+static const int reset_pin = 18;
+static BC95 modem(&Serial2, reset_pin);
+static NBClass nb(&modem);
+static BC95MQTT mqttclient(&modem);
 
 void setup()
 {
     Serial.begin(9600);
     Serial2.begin(9600);
-    Serial.print("DEBUG >> Establishing Connection with the Network using Band 8");
-    int status = BC95NB.begin(8);
-    while (status != NB_NETWORK_REGISTERED)
+    Serial.print("\n\nMODEM>> Establishing a connection with the NB-IoT network");
+    while (nb.begin() != NB_NETWORK_ATTACHED)
     {
-        if (status == NB_NETWORK_SEARCHING_FOR_OPERATOR)
-        {
-            Serial.println("DEBUG>> Searching for an operator.");
-        }
-        if (status == NB_NETWORK_REGSTRATION_DENIED)
-        {
-            Serial.println("DEBUG>> Network Registration Denied.");
-        }
-        if (status == NB_NETWORK_NOT_REGISTERED)
-        {
-            Serial.println("DEBUG>> Network Not Registered.");
-        }
-        status = BC95NB.begin(8);
-        delay(300);
+        Serial.print(".");
+        delay(100);
     }
     Serial.println();
-    Serial.print("DEBUG>> Connection Established.");
+    Serial.println("MODEM>> Connection Established.");
+    Serial.println("MODEM>> IMSI: " + nb.getIMSI());
+    Serial.println("MODEM>> IP Address: " + nb.getIPAddress());
+    if (mqttclient.configDNSAddress("8.8.8.8", "8.8.4.4"))
+        Serial.println("MODEM>> DNS Addressed Configured.");
+    if (mqttclient.hasInstance())
+    {
+        Serial.println("MODEM>> Client has an opened port.");
+        if (mqttclient.end() == MQTT_NETWORK_CLOSED)
+            Serial.println("MODEM>> Port closed.");
+    }
+    if (mqttclient.begin(host, port) != MQTT_NETWORK_OPENED)
+    {
+        Serial.print("MODEM>> Failed to open mqtt network:");
+        Serial.print(host);
+        Serial.print(",");
+        Serial.println(port);
+        while (1)
+        {
+            /* code */
+        }
+    }
+    Serial.println("MODEM>> MQTT network opened succesfully");
 }
 
 void loop()
 {
-    // put your main code here, to run repeatedly:
 }
 ```
 
+### Tested Boards
+- ESP32-WROOM-32
+
+### Supported Protocol
+- MQTT
+  
+### To be added
+- CoAP
+- UDP/TCP
+  
 ## LICENSE
 MIT
