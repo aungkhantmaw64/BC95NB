@@ -70,6 +70,12 @@ public:
      *
      * @return int
      */
+    int isConnected(void);
+    /**
+     * @brief
+     *
+     * @return int
+     */
     int end(void);
 
 private:

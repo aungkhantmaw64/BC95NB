@@ -66,6 +66,17 @@ int BC95MQTT::connect(const char *host, const char *username, const char *passwo
     return 0;
 }
 
+int BC95MQTT::isConnected(void)
+{
+    modem_->send("AT+QMTCONN?");
+    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(1000, &buffer_))
+    {
+        if (buffer_.indexOf("+QMTCONN: 0,3") != -1)
+            return 1;
+    }
+    return 0;
+}
+
 int BC95MQTT::end(void)
 {
     modem_->send("AT+QMTCLOSE=0");
