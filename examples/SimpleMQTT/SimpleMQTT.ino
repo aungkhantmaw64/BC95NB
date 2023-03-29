@@ -15,6 +15,7 @@ void setup()
 {
     Serial.begin(9600);
     Serial2.begin(9600);
+    modem.reset();
     Serial.print("\n\nMODEM>> Establishing a connection with the NB-IoT network");
     while (nb.begin() != NB_NETWORK_ATTACHED)
     {
