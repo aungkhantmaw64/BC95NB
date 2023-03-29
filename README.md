@@ -25,8 +25,11 @@ Description: This example shows how to use the API to establish a connection bet
 #include "BC95NB.h"
 #include "BC95MQTT.h"
 
-static const char host[] = "test.mosquitto.org";
-static const int port = 1883;
+static const char host[] = "";
+static const int port = 0;
+static const char clientid[] = "";
+static const char username[] = "";
+static const char password[] = "";
 static const int reset_pin = 18;
 static BC95 modem(&Serial2, reset_pin);
 static NBClass nb(&modem);
@@ -36,6 +39,7 @@ void setup()
 {
     Serial.begin(9600);
     Serial2.begin(9600);
+    modem.reset();
     Serial.print("\n\nMODEM>> Establishing a connection with the NB-IoT network");
     while (nb.begin() != NB_NETWORK_ATTACHED)
     {
@@ -66,6 +70,18 @@ void setup()
         }
     }
     Serial.println("MODEM>> MQTT network opened succesfully");
+    if (!mqttclient.connect(host, username, password))
+    {
+        Serial.println("MODEM>> Connection rejected by the broker.");
+        while (1)
+        {
+            /* code */
+        }
+    }
+    if (mqttclient.isConnected())
+        Serial.println("MODEM>> Connection accepted by the broker.");
+    if (mqttclient.end() == MQTT_NETWORK_CLOSED)
+        Serial.println("MODEM>> MQTT Network closed succesfully.");
 }
 
 void loop()
