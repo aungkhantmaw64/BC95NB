@@ -7,6 +7,10 @@ BC95 is a high-performance NB-IoT module with extremely low power consumption. T
 2.2mm profile makes it a perfect choice for size sensitive applications. Designed to be compatible with Quectel GSM/GPRS
 M95 module in the compact and unified form factor, it provides a flexible and scalable platform for migrating from GSM/
 GPRS to NB-IoT networks.
+
+> **Note**
+> BC95 Series' built-in firmware do not support TLS/SSL connections. For those who want to use a more secure MQTT connection, this module is not suggested. 
+
 ## Examples
 
 *Note: As BC95 Modem uses AT commands via UART Protocol, you may have to specify which UART port (Serial, Serial2, etc.)*
@@ -78,6 +82,6 @@ void loop()
 ### To be added
 - CoAP
 - UDP/TCP
-  
+ 
 ## LICENSE
 MIT
