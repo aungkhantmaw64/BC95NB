@@ -19,6 +19,7 @@ public:
 
     /* Mock functions */
     void responseExpect(const char *expectedBuffer, int expectedStatus);
+    void end(void);
 
 private:
     void bufferExpect(const char *expectedBuffer);
@@ -31,6 +32,14 @@ private:
 
 void MockBC95::begin()
 {
+}
+
+void MockBC95::end()
+{
+    std::queue<String> empty_buffers;
+    std::queue<int> empty_statuses;
+    buffers_.swap(empty_buffers);
+    responseStatuses_.swap(empty_statuses);
 }
 
 void MockBC95::send(const char *cmd)

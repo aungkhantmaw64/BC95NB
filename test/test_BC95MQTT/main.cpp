@@ -43,6 +43,15 @@ void test_BC95MQTT_configDNSAddress(void)
     TEST_ASSERT_EQUAL(1, mqtt.configDNSAddress("8.8.8.8", "8.8.4.4"));
 }
 
+void test_BC95MQTT_connect(void)
+{
+    char host[] = "test.mosquitto.org";
+    char username[] = "client";
+    char password[] = "password";
+    mock.responseExpect("\r\nOK\r\n+QMTCONN: 0,0,0\r\n", MODEM_STATUS_VALID_RESPONSE);
+    TEST_ASSERT_EQUAL(1, mqtt.connect(host, username, password));
+}
+
 void test_BC95MQTT_end()
 {
     mock.responseExpect("\r\nOK\r\n\r\n+QMTCLOSE: 0,-1\r\n", MODEM_STATUS_VALID_RESPONSE);
@@ -53,10 +62,12 @@ void test_BC95MQTT_end()
 
 void setUp()
 {
+    mock.begin();
 }
 
 void tearDown()
 {
+    mock.end();
     ArduinoFakeReset();
 }
 
@@ -66,6 +77,7 @@ int main(int argc, char **argv)
     RUN_TEST(test_BC95MQTT_begin);
     RUN_TEST(test_BC95MQTT_hasInstance);
     RUN_TEST(test_BC95MQTT_configDNSAddress);
+    RUN_TEST(test_BC95MQTT_connect);
     RUN_TEST(test_BC95MQTT_end);
     UNITY_END();
     return 0;
