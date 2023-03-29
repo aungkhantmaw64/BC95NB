@@ -48,6 +48,10 @@ void setup()
     if (!mqttclient.connect(host, username, password))
     {
         Serial.println("MODEM>> Connection rejected by the broker.");
+        while (1)
+        {
+            /* code */
+        }
     }
     Serial.println("MODEM>> Connection accepted by the broker.");
 }
