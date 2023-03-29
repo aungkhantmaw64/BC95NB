@@ -1,8 +1,11 @@
 #include "BC95NB.h"
 #include "BC95MQTT.h"
 
-static const char host[] = "test.mosquitto.org";
-static const int port = 1883;
+static const char host[] = "";
+static const int port = 0;
+static const char clientid[] = "";
+static const char username[] = "";
+static const char password[] = "";
 static const int reset_pin = 18;
 static BC95 modem(&Serial2, reset_pin);
 static NBClass nb(&modem);
@@ -42,6 +45,11 @@ void setup()
         }
     }
     Serial.println("MODEM>> MQTT network opened succesfully");
+    if (!mqttclient.connect(host, username, password))
+    {
+        Serial.println("MODEM>> Connection rejected by the broker.");
+    }
+    Serial.println("MODEM>> Connection accepted by the broker.");
 }
 
 void loop()
