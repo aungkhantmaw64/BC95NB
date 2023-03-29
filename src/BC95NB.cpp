@@ -84,3 +84,9 @@ String NBClass::getIPAddress(void)
 {
     return ip_;
 }
+
+int NBClass::reset()
+{
+    modem_->send("AT+NRB");
+    return (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(4000));
+}

@@ -51,6 +51,12 @@ public:
      * @return String
      */
     String getIMSI();
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int reset(void);
 
 private:
     Modem *modem_;
