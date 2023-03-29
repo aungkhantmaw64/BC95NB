@@ -50,10 +50,26 @@ int BC95MQTT::configDNSAddress(const char *primary_addr, const char *secondary_a
     return 0;
 }
 
+int BC95MQTT::connect(const char *host, const char *username, const char *password)
+{
+    int attempts = 0;
+    modem_->sendf("AT+QMTCONN=0,\"%s\",\"%s\",\"%s\"", host, username, password);
+    while (attempts < 3)
+    {
+        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(3000, &buffer_))
+        {
+            if (buffer_.indexOf("+QMTCONN: 0,0,0") != -1)
+                return 1;
+        }
+        attempts++;
+    }
+    return 0;
+}
+
 int BC95MQTT::end(void)
 {
     modem_->send("AT+QMTCLOSE=0");
-    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+    if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(3000, &buffer_))
     {
         if (buffer_.indexOf("+QMTCLOSE: 0,0") != -1)
             return MQTT_NETWORK_CLOSED;

@@ -59,6 +59,15 @@ public:
     /**
      * @brief
      *
+     * @param host
+     * @param username
+     * @param password
+     * @return int
+     */
+    int connect(const char *host, const char *username, const char *password);
+    /**
+     * @brief
+     *
      * @return int
      */
     int end(void);
