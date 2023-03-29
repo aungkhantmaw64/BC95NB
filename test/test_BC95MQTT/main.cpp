@@ -52,6 +52,12 @@ void test_BC95MQTT_connect(void)
     TEST_ASSERT_EQUAL(1, mqtt.connect(host, username, password));
 }
 
+void test_BC95MQTT_isConnected(void)
+{
+    mock.responseExpect("\r\nOK\r\n+QMTCONN: 0,3\r\n", MODEM_STATUS_VALID_RESPONSE);
+    TEST_ASSERT_EQUAL(1, mqtt.isConnected());
+}
+
 void test_BC95MQTT_end()
 {
     mock.responseExpect("\r\nOK\r\n\r\n+QMTCLOSE: 0,-1\r\n", MODEM_STATUS_VALID_RESPONSE);
@@ -78,6 +84,7 @@ int main(int argc, char **argv)
     RUN_TEST(test_BC95MQTT_hasInstance);
     RUN_TEST(test_BC95MQTT_configDNSAddress);
     RUN_TEST(test_BC95MQTT_connect);
+    RUN_TEST(test_BC95MQTT_isConnected);
     RUN_TEST(test_BC95MQTT_end);
     UNITY_END();
     return 0;
