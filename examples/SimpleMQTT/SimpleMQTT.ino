@@ -54,7 +54,10 @@ void setup()
             /* code */
         }
     }
-    Serial.println("MODEM>> Connection accepted by the broker.");
+    if (mqttclient.isConnected())
+        Serial.println("MODEM>> Connection accepted by the broker.");
+    if (mqttclient.end() == MQTT_NETWORK_CLOSED)
+        Serial.println("MODEM>> MQTT Network closed succesfully.");
 }
 
 void loop()
