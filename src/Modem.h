@@ -1,4 +1,5 @@
-#ifndef D_MODEM_H
-#define D_MODEM_H
+#ifndef BC95NB_SRC_MODEM_H
+#define BC95NB_SRC_MODEM_H
 
 #endif
+
