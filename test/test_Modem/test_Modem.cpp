@@ -8,8 +8,9 @@ using namespace fakeit;
 class Modem
 {
 public:
-    Modem(uint8_t _resetPin, bool _activeHigh)
-        : m_resetPin(_resetPin),
+    Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh)
+        : m_stream(_stream),
+          m_resetPin(_resetPin),
           m_activeHigh(_activeHigh){
 
           };
@@ -20,8 +21,13 @@ public:
         digitalWrite(m_resetPin, !m_activeHigh);
         delay(200);
     };
+    void send(const char *cmd)
+    {
+        m_stream.print(cmd);
+    }
 
 private:
+    Stream &m_stream;
     uint8_t m_resetPin;
     bool m_activeHigh;
 };
@@ -31,9 +37,10 @@ TEST(Modem, RebootsDueToHardwareResetWithActiveHigh)
     When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
     When(Method(ArduinoFake(), delay)).AlwaysReturn();
 
+    Stream *stream = ArduinoFakeMock(Stream);
     bool activeHigh = HIGH;
     const uint8_t resetPin = 12;
-    Modem modem(resetPin, activeHigh);
+    Modem modem(*stream, resetPin, activeHigh);
 
     modem.reset();
 
@@ -48,9 +55,10 @@ TEST(Modem, RebootsDueToHardwareResetWithActiveLow)
     When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
     When(Method(ArduinoFake(), delay)).AlwaysReturn();
 
+    Stream *stream = ArduinoFakeMock(Stream);
     bool activeHigh = HIGH;
     const uint8_t resetPin = 12;
-    Modem modem(resetPin, activeHigh);
+    Modem modem(*stream, resetPin, activeHigh);
 
     modem.reset();
 
@@ -58,6 +66,23 @@ TEST(Modem, RebootsDueToHardwareResetWithActiveLow)
            Method(ArduinoFake(), delay) +
            Method(ArduinoFake(), digitalWrite).Using(resetPin, HIGH) +
            Method(ArduinoFake(), delay));
+}
+
+TEST(Modem, SendsACommandToSerialPort)
+{
+    When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *))).AlwaysReturn();
+
+    Stream *stream = ArduinoFakeMock(Stream);
+
+    const char *cmd = "AT";
+    bool activeHigh = HIGH;
+    const uint8_t resetPin = 12;
+    Modem modem(*stream, resetPin, activeHigh);
+
+    modem.send(cmd);
+
+    Verify(
+        OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)).Using(cmd));
 }
 
 int main(int argc, char **argv)
