@@ -32,57 +32,100 @@ private:
     bool m_activeHigh;
 };
 
-TEST(Modem, RebootsDueToHardwareResetWithActiveHigh)
+class ModemBuilder
 {
-    When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
-    When(Method(ArduinoFake(), delay)).AlwaysReturn();
+public:
+    Modem *buildModem()
+    {
+        return new Modem(*m_stream, m_resetPin, m_activeHigh);
+    }
+    ModemBuilder *setResetPin(uint8_t _resetPin)
+    {
+        m_resetPin = _resetPin;
+        return this;
+    }
+    ModemBuilder *setActiveHigh(bool _activeHigh)
+    {
+        m_activeHigh = _activeHigh;
+        return this;
+    }
 
-    Stream *stream = ArduinoFakeMock(Stream);
-    bool activeHigh = HIGH;
-    const uint8_t resetPin = 12;
-    Modem modem(*stream, resetPin, activeHigh);
+private:
+    Stream *m_stream = ArduinoFakeMock(Stream);
+    uint8_t m_resetPin = DEFAULT_RESET_PIN;
+    bool m_activeHigh = HIGH;
+};
 
-    modem.reset();
+ModemBuilder *modemBuilder = nullptr;
 
-    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, HIGH) +
+class TestSupport
+{
+public:
+    const uint8_t RESET_PIN = 14;
+    void setupMocks(void)
+    {
+        When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+        When(Method(ArduinoFake(), delay)).AlwaysReturn();
+
+        When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *))).AlwaysReturn();
+    }
+};
+
+TestSupport testSupport;
+
+class ModemTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        ArduinoFakeReset();
+        modemBuilder = new ModemBuilder();
+        testSupport.setupMocks();
+    }
+    void TearDown() override
+    {
+    }
+};
+
+static void VerifyReset(uint8_t resetPin, bool activeHigh)
+{
+    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, activeHigh) +
            Method(ArduinoFake(), delay) +
-           Method(ArduinoFake(), digitalWrite).Using(resetPin, LOW) +
+           Method(ArduinoFake(), digitalWrite).Using(resetPin, !activeHigh) +
            Method(ArduinoFake(), delay));
 }
 
-TEST(Modem, RebootsDueToHardwareResetWithActiveLow)
+TEST_F(ModemTest, RebootsDueToHardwareResetWithActiveHigh)
 {
-    When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
-    When(Method(ArduinoFake(), delay)).AlwaysReturn();
+    Modem *modem = modemBuilder->setResetPin(testSupport.RESET_PIN)
+                       ->setActiveHigh(HIGH)
+                       ->buildModem();
 
-    Stream *stream = ArduinoFakeMock(Stream);
-    bool activeHigh = HIGH;
-    const uint8_t resetPin = 12;
-    Modem modem(*stream, resetPin, activeHigh);
+    modem->reset();
 
-    modem.reset();
-
-    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, LOW) +
-           Method(ArduinoFake(), delay) +
-           Method(ArduinoFake(), digitalWrite).Using(resetPin, HIGH) +
-           Method(ArduinoFake(), delay));
+    VerifyReset(testSupport.RESET_PIN, HIGH);
 }
 
-TEST(Modem, SendsACommandToSerialPort)
+TEST_F(ModemTest, RebootsDueToHardwareResetWithActiveLow)
 {
-    When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *))).AlwaysReturn();
+    Modem *modem = modemBuilder->setResetPin(testSupport.RESET_PIN)
+                       ->setActiveHigh(LOW)
+                       ->buildModem();
 
-    Stream *stream = ArduinoFakeMock(Stream);
+    modem->reset();
+
+    VerifyReset(testSupport.RESET_PIN, LOW);
+}
+
+TEST_F(ModemTest, SendsACommandToSerialPort)
+{
 
     const char *cmd = "AT";
-    bool activeHigh = HIGH;
-    const uint8_t resetPin = 12;
-    Modem modem(*stream, resetPin, activeHigh);
+    Modem *modem = modemBuilder->buildModem();
 
-    modem.send(cmd);
+    modem->send(cmd);
 
-    Verify(
-        OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)).Using(cmd));
+    Verify(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)).Using(cmd));
 }
 
 int main(int argc, char **argv)
