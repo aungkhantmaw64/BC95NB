@@ -26,22 +26,38 @@ private:
     bool m_activeHigh;
 };
 
-TEST(Modem, RebootsDueToHardwareReset)
+TEST(Modem, RebootsDueToHardwareResetWithActiveHigh)
 {
     When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
     When(Method(ArduinoFake(), delay)).AlwaysReturn();
 
-    bool givenPinModes[] = {HIGH, LOW};
-    bool mode = givenPinModes[0];
+    bool activeHigh = HIGH;
     const uint8_t resetPin = 12;
-    bool activeHigh = mode;
     Modem modem(resetPin, activeHigh);
 
     modem.reset();
 
-    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, mode)).Once();
-    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, !mode)).Once();
-    Verify(Method(ArduinoFake(), delay).Using(200)).Exactly(2_Times);
+    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, HIGH) +
+           Method(ArduinoFake(), delay) +
+           Method(ArduinoFake(), digitalWrite).Using(resetPin, LOW) +
+           Method(ArduinoFake(), delay));
+}
+
+TEST(Modem, RebootsDueToHardwareResetWithActiveLow)
+{
+    When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+    When(Method(ArduinoFake(), delay)).AlwaysReturn();
+
+    bool activeHigh = HIGH;
+    const uint8_t resetPin = 12;
+    Modem modem(resetPin, activeHigh);
+
+    modem.reset();
+
+    Verify(Method(ArduinoFake(), digitalWrite).Using(resetPin, LOW) +
+           Method(ArduinoFake(), delay) +
+           Method(ArduinoFake(), digitalWrite).Using(resetPin, HIGH) +
+           Method(ArduinoFake(), delay));
 }
 
 int main(int argc, char **argv)
