@@ -5,6 +5,16 @@
 
 using namespace fakeit;
 
+#include <stdarg.h>
+
+#define MODEM_CMD_MAX_SIZE 100
+
+enum ResponseCode
+{
+    EMPTY,
+    OK
+};
+
 class Modem
 {
 public:
@@ -24,6 +34,29 @@ public:
     void send(const char *cmd)
     {
         m_stream.print(cmd);
+    }
+    ResponseCode waitForResponse(uint32_t timeoutMs)
+    {
+        String response;
+        ResponseCode code = ResponseCode::EMPTY;
+        uint32_t startMillis = millis();
+        while (millis() - startMillis < timeoutMs)
+        {
+            if (m_stream.available())
+            {
+                char ch = m_stream.read();
+                response += ch;
+                if (ch == '\n')
+                {
+                    if (response.indexOf("OK") != -1)
+                    {
+                        code = ResponseCode::OK;
+                    }
+                    response = "";
+                }
+            }
+        }
+        return code;
     }
 
 private:
@@ -62,13 +95,68 @@ class TestSupport
 {
 public:
     const uint8_t RESET_PIN = 14;
+    void setClock(uint32_t _startTime, uint32_t _timeStep)
+    {
+        m_startTime = _startTime;
+        m_timeStep = _timeStep;
+    }
+    uint32_t getTicks(void)
+    {
+        unsigned long currentTime = m_startTime;
+        m_startTime += m_timeStep;
+        return currentTime;
+    }
+    void putRxBuffer(const char *_str)
+    {
+        m_rxBuffer = String(_str);
+    }
+    String getRxBuffer(void)
+    {
+        return m_rxBuffer;
+    }
+    char popRxBuffer(void)
+    {
+        char chr = m_rxBuffer.charAt(0);
+        m_rxBuffer.remove(0, 1); // remove(0) doesn't work
+        return chr;
+    }
     void setupMocks(void)
     {
+        // Digital I/O
         When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+
+        // Stream and serial communications
+        When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)))
+            .AlwaysDo([this](const char *str) -> int
+                      { m_txBuffer = String(str);
+                        return strlen(str); });
+        When(Method(ArduinoFake(Stream), read))
+            .AlwaysDo([this]() -> char
+                      { return popRxBuffer(); });
+        When(Method(ArduinoFake(Stream), available))
+            .AlwaysDo([this]() -> int
+                      { return m_rxBuffer.length(); });
+
+        // Time services
         When(Method(ArduinoFake(), delay)).AlwaysReturn();
 
-        When(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *))).AlwaysReturn();
+        When(Method(ArduinoFake(), millis))
+            .AlwaysDo([this]() -> unsigned long
+                      { return getTicks(); });
     }
+    void reset(void)
+    {
+        m_txBuffer = "";
+        m_rxBuffer = "";
+        m_startTime = 0;
+        m_timeStep = 1;
+    }
+
+private:
+    String m_txBuffer;
+    String m_rxBuffer;
+    uint32_t m_startTime = 0;
+    uint32_t m_timeStep = 1;
 };
 
 TestSupport testSupport;
@@ -84,6 +172,7 @@ protected:
     }
     void TearDown() override
     {
+        delete modemBuilder;
     }
 };
 
@@ -123,9 +212,55 @@ TEST_F(ModemTest, SendsACommandToSerialPort)
     const char *cmd = "AT";
     Modem *modem = modemBuilder->buildModem();
 
-    modem->send(cmd);
+    modem->send("AT");
 
     Verify(OverloadedMethod(ArduinoFake(Stream), print, size_t(const char *)).Using(cmd));
+}
+
+TEST_F(ModemTest, ReturnEMPTYWhenWaitForResponse)
+{
+    Modem *modem = modemBuilder->buildModem();
+
+    ResponseCode retCode = modem->waitForResponse(300);
+    EXPECT_EQ(ResponseCode::EMPTY, retCode);
+}
+
+TEST(MockSerial, DoesWhatSerialShouldDo)
+{
+    Stream *stream = ArduinoFakeMock(Stream);
+    testSupport.putRxBuffer("OK\r\nHELLO");
+    ASSERT_STREQ("OK\r\nHELLO", testSupport.getRxBuffer().c_str());
+    ASSERT_EQ(9, stream->available());
+    ASSERT_EQ('O', stream->read());
+    ASSERT_EQ(8, stream->available());
+    ASSERT_EQ('K', stream->read());
+    ASSERT_EQ(7, stream->available());
+    ASSERT_EQ('\r', stream->read());
+    ASSERT_EQ(6, stream->available());
+    ASSERT_EQ('\n', stream->read());
+    ASSERT_EQ(5, stream->available());
+    ASSERT_EQ('H', stream->read());
+    ASSERT_EQ(4, stream->available());
+    ASSERT_EQ('E', stream->read());
+    ASSERT_EQ(3, stream->available());
+    ASSERT_EQ('L', stream->read());
+    ASSERT_EQ(2, stream->available());
+    ASSERT_EQ('L', stream->read());
+    ASSERT_EQ(1, stream->available());
+    ASSERT_EQ('O', stream->read());
+    ASSERT_EQ(0, stream->available());
+    ASSERT_EQ(0, stream->read());
+    ASSERT_EQ(0, stream->available());
+    ASSERT_EQ(0, stream->read());
+}
+
+TEST_F(ModemTest, ReturnOKWhenWaitForResponse)
+{
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\nOK\r\n");
+    testSupport.setClock(0, 1);
+    ResponseCode retCode = modem->waitForResponse(300);
+    EXPECT_EQ(ResponseCode::OK, retCode);
 }
 
 int main(int argc, char **argv)
