@@ -12,7 +12,9 @@ using namespace fakeit;
 enum ResponseCode
 {
     EMPTY,
-    OK
+    OK,
+    ERROR,
+    CME_ERROR
 };
 
 class Modem
@@ -49,9 +51,11 @@ public:
                 if (ch == '\n')
                 {
                     if (response.indexOf("OK") != -1)
-                    {
                         code = ResponseCode::OK;
-                    }
+                    else if (response.indexOf("+CME") != -1)
+                        code = ResponseCode::CME_ERROR;
+                    else if (response.indexOf("ERROR") != -1)
+                        code = ResponseCode::ERROR;
                     response = "";
                 }
             }
@@ -261,6 +265,24 @@ TEST_F(ModemTest, ReturnOKWhenWaitForResponse)
     testSupport.setClock(0, 1);
     ResponseCode retCode = modem->waitForResponse(300);
     EXPECT_EQ(ResponseCode::OK, retCode);
+}
+
+TEST_F(ModemTest, ReturnERRORWhenWaitForResponse)
+{
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\nERROR\r\n");
+    testSupport.setClock(0, 1);
+    ResponseCode retCode = modem->waitForResponse(300);
+    EXPECT_EQ(ResponseCode::ERROR, retCode);
+}
+
+TEST_F(ModemTest, ReturnCME_ERRORWhenWaitForResponse)
+{
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\n+CME ERROR: 50\r\n");
+    testSupport.setClock(0, 1);
+    ResponseCode retCode = modem->waitForResponse(300);
+    EXPECT_EQ(ResponseCode::CME_ERROR, retCode);
 }
 
 int main(int argc, char **argv)
