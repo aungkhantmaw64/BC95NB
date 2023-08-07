@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "setup.h"
+#include <vector>
 
 ModemBuilder *modemBuilder = nullptr;
 
@@ -18,6 +19,23 @@ protected:
     {
         delete modemBuilder;
     }
+};
+
+class FooModemHandler : public ModemResponseHandler
+{
+
+public:
+    String getResponse(int _index)
+    {
+        return m_responses[_index];
+    }
+    void onReceive(String _response) override
+    {
+        m_responses.push_back(_response);
+    }
+
+private:
+    std::vector<String> m_responses;
 };
 
 static void VerifyReset(uint8_t resetPin, bool activeHigh)
@@ -123,6 +141,20 @@ TEST_F(ModemTest, ReturnCME_ERRORWhenWaitForResponse)
     testSupport.setClock(0, 1);
     ResponseCode retCode = modem->waitForResponse(300);
     EXPECT_EQ(ResponseCode::CME_ERROR, retCode);
+}
+
+TEST_F(ModemTest, CallsASingleResponseHandlerWhenReceivedStringResponse)
+{
+    FooModemHandler modemHandler;
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\nRESP1\r\nRESP2\r\nOK\r\n");
+    testSupport.setClock(0, 1);
+
+    modem->addResponseHandler(&modemHandler);
+    ResponseCode retCode = modem->waitForResponse(1000);
+    EXPECT_EQ(ResponseCode::OK, retCode);
+    EXPECT_STREQ("RESP1", modemHandler.getResponse(0).c_str());
+    EXPECT_STREQ("RESP2", modemHandler.getResponse(1).c_str());
 }
 
 int main(int argc, char **argv)

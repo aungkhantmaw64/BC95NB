@@ -39,9 +39,36 @@ ResponseCode Modem::waitForResponse(uint32_t _timeoutMs)
                     code = ResponseCode::CME_ERROR;
                 else if (response.indexOf("ERROR") != -1)
                     code = ResponseCode::ERROR;
+                else
+                {
+                    for (auto i{0}; i < MODEM_MAX_RESPONSE_HANDLERS; i++)
+                    {
+                        if (m_respHandlers[i] != nullptr)
+                        {
+                            response.replace("\r", "");
+                            response.replace("\n", "");
+                            response.trim();
+                            if (response.length())
+                                m_respHandlers[i]->onReceive(response);
+                        }
+                    }
+                }
                 response = "";
             }
         }
     }
     return code;
+}
+
+int Modem::addResponseHandler(ModemResponseHandler *_handler)
+{
+    for (auto i{0}; i < MODEM_MAX_RESPONSE_HANDLERS; i++)
+    {
+        if (m_respHandlers[i] == nullptr)
+        {
+            m_respHandlers[i] = _handler;
+            return 0;
+        }
+    }
+    return -1;
 }
