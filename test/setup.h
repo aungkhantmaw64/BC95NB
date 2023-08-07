@@ -62,6 +62,10 @@ public:
         m_rxBuffer.remove(0, 1); // remove(0) doesn't work
         return chr;
     }
+    String getTxBuffer(void)
+    {
+        return m_txBuffer;
+    }
     void setupMocks(void)
     {
         // Digital I/O
