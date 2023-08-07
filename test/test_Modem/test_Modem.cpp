@@ -21,7 +21,7 @@ protected:
     }
 };
 
-class FooModemHandler : public ModemResponseHandler
+class FooModemHandler : public ModemUrcHandler
 {
 
 public:
@@ -141,6 +141,17 @@ TEST_F(ModemTest, ReturnCME_ERRORWhenWaitForResponse)
     testSupport.setClock(0, 1);
     ResponseCode retCode = modem->waitForResponse(300);
     EXPECT_EQ(ResponseCode::CME_ERROR, retCode);
+}
+
+TEST_F(ModemTest, WaitForResponseToGetRawResponse)
+{
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\nRAW RESPONSE\r\n");
+    testSupport.setClock(0, 1);
+
+    String response;
+    modem->waitForResponse(1000, &response);
+    EXPECT_STREQ(response.c_str(), "\r\nRAW RESPONSE\r\n");
 }
 
 TEST_F(ModemTest, CallsASingleResponseHandlerWhenReceivedStringResponse)
