@@ -29,7 +29,7 @@ public:
     {
         return m_responses[_index];
     }
-    void onReceive(String _response) override
+    void onReceive(String &_response) override
     {
         m_responses.push_back(_response);
     }
@@ -155,6 +155,41 @@ TEST_F(ModemTest, CallsASingleResponseHandlerWhenReceivedStringResponse)
     EXPECT_EQ(ResponseCode::OK, retCode);
     EXPECT_STREQ("RESP1", modemHandler.getResponse(0).c_str());
     EXPECT_STREQ("RESP2", modemHandler.getResponse(1).c_str());
+}
+
+TEST_F(ModemTest, CallsMultipleResponseHandlerWhenReceivedStringResponse)
+{
+    FooModemHandler modemHandlerOne;
+    FooModemHandler modemHandlerTwo;
+    FooModemHandler modemHandlerThree;
+
+    Modem *modem = modemBuilder->buildModem();
+
+    testSupport.putRxBuffer("\r\nRESP1\r\nRESP2\r\nOK\r\n");
+    testSupport.setClock(0, 1);
+
+    modem->addResponseHandler(&modemHandlerOne);
+    modem->addResponseHandler(&modemHandlerTwo);
+    modem->addResponseHandler(&modemHandlerThree);
+
+    ResponseCode retCode = modem->waitForResponse(1000);
+    EXPECT_EQ(ResponseCode::OK, retCode);
+    EXPECT_STREQ("RESP1", modemHandlerOne.getResponse(0).c_str());
+    EXPECT_STREQ("RESP2", modemHandlerOne.getResponse(1).c_str());
+    EXPECT_STREQ("RESP1", modemHandlerTwo.getResponse(0).c_str());
+    EXPECT_STREQ("RESP2", modemHandlerTwo.getResponse(1).c_str());
+    EXPECT_STREQ("RESP1", modemHandlerThree.getResponse(0).c_str());
+    EXPECT_STREQ("RESP2", modemHandlerThree.getResponse(1).c_str());
+}
+
+TEST_F(ModemTest, ReturnsNegativeWhenMoreThanMaxResponseHandlersAreAdded)
+{
+    Modem *modem = modemBuilder->buildModem();
+    EXPECT_EQ(modem->addResponseHandler(new FooModemHandler), 0);
+    EXPECT_EQ(modem->addResponseHandler(new FooModemHandler), 0);
+    EXPECT_EQ(modem->addResponseHandler(new FooModemHandler), 0);
+    EXPECT_EQ(modem->addResponseHandler(new FooModemHandler), 0);
+    EXPECT_LT(modem->addResponseHandler(new FooModemHandler), 0);
 }
 
 int main(int argc, char **argv)

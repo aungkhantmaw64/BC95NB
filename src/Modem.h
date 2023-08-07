@@ -17,7 +17,7 @@ enum ResponseCode
 class ModemResponseHandler
 {
 public:
-    virtual void onReceive(String _response) = 0;
+    virtual void onReceive(String &_response) = 0;
 };
 class Modem
 {
