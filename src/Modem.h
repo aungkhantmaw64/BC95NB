@@ -14,7 +14,7 @@ enum ResponseCode
     CME_ERROR
 };
 
-class ModemResponseHandler
+class ModemUrcHandler
 {
 public:
     virtual void onReceive(String &_response) = 0;
@@ -25,14 +25,14 @@ public:
     Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh);
     void reset();
     void send(const char *_cmd);
-    ResponseCode waitForResponse(uint32_t _timeoutMs);
-    int addResponseHandler(ModemResponseHandler *_handler);
+    ResponseCode waitForResponse(uint32_t _timeoutMs, String *_response = nullptr);
+    int addResponseHandler(ModemUrcHandler *_handler);
 
 private:
     Stream &m_stream;
     uint8_t m_resetPin;
     bool m_activeHigh;
-    ModemResponseHandler *m_respHandlers[MODEM_MAX_RESPONSE_HANDLERS] = {nullptr};
+    ModemUrcHandler *m_respHandlers[MODEM_MAX_RESPONSE_HANDLERS] = {nullptr};
 };
 
 #endif

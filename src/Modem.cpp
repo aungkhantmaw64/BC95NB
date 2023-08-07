@@ -20,7 +20,7 @@ void Modem::send(const char *_cmd)
     m_stream.print(_cmd);
 }
 
-ResponseCode Modem::waitForResponse(uint32_t _timeoutMs)
+ResponseCode Modem::waitForResponse(uint32_t _timeoutMs, String *_response)
 {
     String response;
     ResponseCode code = ResponseCode::EMPTY;
@@ -31,6 +31,8 @@ ResponseCode Modem::waitForResponse(uint32_t _timeoutMs)
         {
             char ch = m_stream.read();
             response += ch;
+            if (_response)
+                *_response += ch;
             if (ch == '\n')
             {
                 if (response.indexOf("OK") != -1)
@@ -60,7 +62,7 @@ ResponseCode Modem::waitForResponse(uint32_t _timeoutMs)
     return code;
 }
 
-int Modem::addResponseHandler(ModemResponseHandler *_handler)
+int Modem::addResponseHandler(ModemUrcHandler *_handler)
 {
     for (auto i{0}; i < MODEM_MAX_RESPONSE_HANDLERS; i++)
     {
