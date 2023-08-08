@@ -25,13 +25,9 @@ public:
         m_modem.send("AT+CFUN?\r\n");
         m_modem.waitForResponse(300, &response);
         if (response.indexOf("+CFUN") != -1)
-        {
             _result->fun = response.charAt(response.indexOf(":") + 1) - '0';
-        }
         else
-        {
             _result->fun = -1;
-        }
     }
 
 private:
