@@ -8,7 +8,7 @@ TestSupport testSupport;
 
 #define STD_MODEM_MAX_IMSI_LENGTH 16
 
-enum class ModemCMD
+enum class AtCmd
 {
     CFUN,
     CIMI,
@@ -34,7 +34,7 @@ typedef struct CEREG
 
 typedef struct CGATT
 {
-
+    uint8_t state;
 } CGATT_t;
 class StdModem
 {
@@ -45,26 +45,26 @@ public:
           };
     ~StdModem(){};
 
-    void readCmd(ModemCMD cmd)
+    void readCmd(AtCmd cmd)
     {
         switch (cmd)
         {
-        case ModemCMD::CFUN:
+        case AtCmd::CFUN:
         {
             m_modem.send("AT+CFUN?\r\n");
             break;
         }
-        case ModemCMD::CIMI:
+        case AtCmd::CIMI:
         {
             m_modem.send("AT+CIMI\r\n");
             break;
         }
-        case ModemCMD::CEREG:
+        case AtCmd::CEREG:
         {
             m_modem.send("AT+CEREG?\r\n");
             break;
         }
-        case ModemCMD::CGATT:
+        case AtCmd::CGATT:
         {
             m_modem.send("AT+CGATT?\r\n");
             break;
@@ -73,15 +73,16 @@ public:
             break;
         }
     }
-    void wait(uint32_t timeoutMs, ModemCMD cmd)
+    void wait(uint32_t timeoutMs, AtCmd cmd)
     {
         String response;
         ResponseCode retCode = m_modem.waitForResponse(timeoutMs, &response);
+        response.trim();
         if (retCode == ResponseCode::OK)
         {
             switch (cmd)
             {
-            case ModemCMD::CFUN:
+            case AtCmd::CFUN:
             {
                 if (response.indexOf("+CFUN") != -1)
                     m_cfun.fun = response.charAt(response.indexOf(":") + 1) - '0';
@@ -89,7 +90,7 @@ public:
                     m_cfun.fun = -1;
                 break;
             }
-            case ModemCMD::CIMI:
+            case AtCmd::CIMI:
             {
                 response.replace("\r\n", "");
                 response.trim();
@@ -100,13 +101,18 @@ public:
                 }
                 break;
             }
-            case ModemCMD::CEREG:
+            case AtCmd::CEREG:
             {
                 int8_t n_index = response.indexOf("+CEREG:") + strlen("+CEREG:");
                 int8_t stat_index = response.indexOf(",", n_index) + 1;
                 m_cereg.n = response.charAt(n_index) - '0';
                 m_cereg.stat = response.charAt(stat_index) - '0';
                 break;
+            }
+            case AtCmd::CGATT:
+            {
+                int8_t state_index = response.indexOf("+CGATT") + strlen("+CGATT:");
+                m_cgatt.state = response.charAt(state_index) - '0';
             }
             default:
                 break;
@@ -126,6 +132,10 @@ public:
     void getCEREG(CEREG_t *_result)
     {
         *_result = m_cereg;
+    }
+    void getCGATT(CGATT_t *_result)
+    {
+        *_result = m_cgatt;
     }
 
 private:
@@ -155,11 +165,13 @@ protected:
 TEST_F(StdModemTest, getCFUN)
 {
     Modem *modem = modemBuilder->buildModem();
-    StdModem stdModem(*modem);
     testSupport.putRxBuffer("\r\n+CFUN:1\r\nOK\r\n");
-    stdModem.readCmd(ModemCMD::CFUN);
-    stdModem.wait(300, ModemCMD::CFUN);
+
+    StdModem stdModem(*modem);
     CFUN_t cfun;
+
+    stdModem.readCmd(AtCmd::CFUN);
+    stdModem.wait(300, AtCmd::CFUN);
     stdModem.getCFUN(&cfun);
 
     EXPECT_EQ(cfun.fun, 1);
@@ -169,11 +181,14 @@ TEST_F(StdModemTest, getCFUN)
 TEST_F(StdModemTest, getCIMI)
 {
     Modem *modem = modemBuilder->buildModem();
-    StdModem stdModem(*modem);
     testSupport.putRxBuffer("\r\n460111174590523\r\nOK\r\n");
-    stdModem.readCmd(ModemCMD::CIMI);
-    stdModem.wait(300, ModemCMD::CIMI);
+
+    StdModem stdModem(*modem);
     CIMI_t cimi;
+
+    stdModem.readCmd(AtCmd::CIMI);
+    stdModem.wait(300, AtCmd::CIMI);
+
     memset(cimi.imsi, 0, STD_MODEM_MAX_IMSI_LENGTH);
     stdModem.getCIMI(&cimi);
 
@@ -184,22 +199,33 @@ TEST_F(StdModemTest, getCIMI)
 TEST_F(StdModemTest, getCEREG)
 {
     Modem *modem = modemBuilder->buildModem();
-    testSupport.putRxBuffer("\r\n+CEREG:0,1\r\nOK\r\n");
+    testSupport.putRxBuffer("\r\n+CEREG:0,5\r\nOK\r\n");
 
     StdModem stdModem(*modem);
-    stdModem.readCmd(ModemCMD::CEREG);
-    stdModem.wait(300, ModemCMD::CEREG);
     CEREG_t cereg;
+
+    stdModem.readCmd(AtCmd::CEREG);
+    stdModem.wait(300, AtCmd::CEREG);
     stdModem.getCEREG(&cereg);
 
     EXPECT_EQ(cereg.n, 0);
-    EXPECT_EQ(cereg.stat, 1);
+    EXPECT_EQ(cereg.stat, 5);
     EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CEREG?\r\n");
 }
 
 TEST_F(StdModemTest, getCGATT)
 {
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\n+CGATT:1\r\nOK\r\n");
+
+    StdModem stdModem(*modem);
     CGATT_t cgatt;
+
+    stdModem.readCmd(AtCmd::CGATT);
+    stdModem.wait(300, AtCmd::CGATT);
+    stdModem.getCGATT(&cgatt);
+
+    EXPECT_EQ(cgatt.state, 1);
 }
 
 int main(int argc, char **argv)
