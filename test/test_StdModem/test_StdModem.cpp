@@ -8,7 +8,7 @@ TestSupport testSupport;
 
 #define STD_MODEM_MAX_IMSI_LENGTH 16
 
-enum class AtCmd
+enum class STD_AtCmd
 {
     CFUN,
     CIMI,
@@ -45,26 +45,26 @@ public:
           };
     ~StdModem(){};
 
-    void readCmd(AtCmd cmd)
+    void readCmd(STD_AtCmd cmd)
     {
         switch (cmd)
         {
-        case AtCmd::CFUN:
+        case STD_AtCmd::CFUN:
         {
             m_modem.send("AT+CFUN?\r\n");
             break;
         }
-        case AtCmd::CIMI:
+        case STD_AtCmd::CIMI:
         {
             m_modem.send("AT+CIMI\r\n");
             break;
         }
-        case AtCmd::CEREG:
+        case STD_AtCmd::CEREG:
         {
             m_modem.send("AT+CEREG?\r\n");
             break;
         }
-        case AtCmd::CGATT:
+        case STD_AtCmd::CGATT:
         {
             m_modem.send("AT+CGATT?\r\n");
             break;
@@ -73,7 +73,7 @@ public:
             break;
         }
     }
-    void wait(uint32_t timeoutMs, AtCmd cmd)
+    void wait(uint32_t timeoutMs, STD_AtCmd cmd)
     {
         String response;
         ResponseCode retCode = m_modem.waitForResponse(timeoutMs, &response);
@@ -82,7 +82,7 @@ public:
         {
             switch (cmd)
             {
-            case AtCmd::CFUN:
+            case STD_AtCmd::CFUN:
             {
                 if (response.indexOf("+CFUN") != -1)
                     m_cfun.fun = response.charAt(response.indexOf(":") + 1) - '0';
@@ -90,7 +90,7 @@ public:
                     m_cfun.fun = -1;
                 break;
             }
-            case AtCmd::CIMI:
+            case STD_AtCmd::CIMI:
             {
                 response.replace("\r\n", "");
                 response.trim();
@@ -101,7 +101,7 @@ public:
                 }
                 break;
             }
-            case AtCmd::CEREG:
+            case STD_AtCmd::CEREG:
             {
                 int8_t n_index = response.indexOf("+CEREG:") + strlen("+CEREG:");
                 int8_t stat_index = response.indexOf(",", n_index) + 1;
@@ -109,7 +109,7 @@ public:
                 m_cereg.stat = response.charAt(stat_index) - '0';
                 break;
             }
-            case AtCmd::CGATT:
+            case STD_AtCmd::CGATT:
             {
                 int8_t state_index = response.indexOf("+CGATT") + strlen("+CGATT:");
                 m_cgatt.state = response.charAt(state_index) - '0';
@@ -170,8 +170,8 @@ TEST_F(StdModemTest, getCFUN)
     StdModem stdModem(*modem);
     CFUN_t cfun;
 
-    stdModem.readCmd(AtCmd::CFUN);
-    stdModem.wait(300, AtCmd::CFUN);
+    stdModem.readCmd(STD_AtCmd::CFUN);
+    stdModem.wait(300, STD_AtCmd::CFUN);
     stdModem.getCFUN(&cfun);
 
     EXPECT_EQ(cfun.fun, 1);
@@ -186,8 +186,8 @@ TEST_F(StdModemTest, getCIMI)
     StdModem stdModem(*modem);
     CIMI_t cimi;
 
-    stdModem.readCmd(AtCmd::CIMI);
-    stdModem.wait(300, AtCmd::CIMI);
+    stdModem.readCmd(STD_AtCmd::CIMI);
+    stdModem.wait(300, STD_AtCmd::CIMI);
 
     memset(cimi.imsi, 0, STD_MODEM_MAX_IMSI_LENGTH);
     stdModem.getCIMI(&cimi);
@@ -204,8 +204,8 @@ TEST_F(StdModemTest, getCEREG)
     StdModem stdModem(*modem);
     CEREG_t cereg;
 
-    stdModem.readCmd(AtCmd::CEREG);
-    stdModem.wait(300, AtCmd::CEREG);
+    stdModem.readCmd(STD_AtCmd::CEREG);
+    stdModem.wait(300, STD_AtCmd::CEREG);
     stdModem.getCEREG(&cereg);
 
     EXPECT_EQ(cereg.n, 0);
@@ -221,8 +221,8 @@ TEST_F(StdModemTest, getCGATT)
     StdModem stdModem(*modem);
     CGATT_t cgatt;
 
-    stdModem.readCmd(AtCmd::CGATT);
-    stdModem.wait(300, AtCmd::CGATT);
+    stdModem.readCmd(STD_AtCmd::CGATT);
+    stdModem.wait(300, STD_AtCmd::CGATT);
     stdModem.getCGATT(&cgatt);
 
     EXPECT_EQ(cgatt.state, 1);
