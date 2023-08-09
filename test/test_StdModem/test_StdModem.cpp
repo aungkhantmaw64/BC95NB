@@ -13,7 +13,8 @@ enum class STD_AtCmd
     CFUN,
     CIMI,
     CEREG,
-    CGATT
+    CGATT,
+    CGPADDR
 };
 
 typedef struct CFUN
@@ -36,6 +37,12 @@ typedef struct CGATT
 {
     uint8_t state;
 } CGATT_t;
+
+typedef struct CGPADDR
+{
+    uint8_t cid;
+    char ipaddr[20];
+} CGPADDR_t;
 class StdModem
 {
 public:
@@ -67,6 +74,11 @@ public:
         case STD_AtCmd::CGATT:
         {
             m_modem.send("AT+CGATT?\r\n");
+            break;
+        }
+        case STD_AtCmd::CGPADDR:
+        {
+            m_modem.send("AT+CGPADDR\r\n");
             break;
         }
         default:
@@ -114,6 +126,18 @@ public:
                 int8_t state_index = response.indexOf("+CGATT") + strlen("+CGATT:");
                 m_cgatt.state = response.charAt(state_index) - '0';
             }
+            case STD_AtCmd::CGPADDR:
+            {
+                int8_t cid_index = response.indexOf("+CGPADDR") + strlen("+CGPADDR:");
+                int8_t ipaddr_start = response.indexOf(",", cid_index) + 1;
+                int8_t ipaddr_end = ipaddr_start;
+                while (isdigit(response.charAt(ipaddr_end)) || (response.charAt(ipaddr_end) == '.'))
+                {
+                    ipaddr_end++;
+                }
+                m_cgpaddr.cid = response.charAt(cid_index) - '0';
+                strcpy(m_cgpaddr.ipaddr, response.substring(ipaddr_start, ipaddr_end).c_str());
+            }
             default:
                 break;
             }
@@ -137,6 +161,10 @@ public:
     {
         *_result = m_cgatt;
     }
+    void getCGPADDR(CGPADDR_t *_result)
+    {
+        *_result = m_cgpaddr;
+    }
 
 private:
     Modem &m_modem;
@@ -144,6 +172,7 @@ private:
     CEREG_t m_cereg;
     CIMI_t m_cimi;
     CGATT_t m_cgatt;
+    CGPADDR_t m_cgpaddr;
 };
 
 class StdModemTest : public ::testing::Test
@@ -226,6 +255,24 @@ TEST_F(StdModemTest, getCGATT)
     stdModem.getCGATT(&cgatt);
 
     EXPECT_EQ(cgatt.state, 1);
+    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CGATT?\r\n");
+}
+
+TEST_F(StdModemTest, getCGPADDR)
+{
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer("\r\n+CGPADDR:0,10.169.241.288\r\nOK\r\n");
+
+    StdModem stdModem(*modem);
+    CGPADDR_t cgpaddr;
+
+    stdModem.readCmd(STD_AtCmd::CGPADDR);
+    stdModem.wait(300, STD_AtCmd::CGPADDR);
+    stdModem.getCGPADDR(&cgpaddr);
+
+    EXPECT_EQ(cgpaddr.cid, 0);
+    EXPECT_STREQ(cgpaddr.ipaddr, "10.169.241.288");
+    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CGPADDR\r\n");
 }
 
 int main(int argc, char **argv)
