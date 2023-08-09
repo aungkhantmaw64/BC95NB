@@ -3,6 +3,7 @@
 
 #include <ArduinoFake.h>
 #include "Modem.h"
+#include "StdModem.h"
 #include <vector>
 
 #define DEFAULT_RESET_PIN 14;
