@@ -51,7 +51,9 @@ ResponseCode Modem::waitForResponse(uint32_t _timeoutMs, String *_response)
                             response.replace("\n", "");
                             response.trim();
                             if (response.length())
+                            {
                                 m_respHandlers[i]->onReceive(response);
+                            }
                         }
                     }
                 }

@@ -114,6 +114,9 @@ TEST(MockSerial, DoesWhatSerialShouldDo)
     ASSERT_EQ(0, stream->read());
     ASSERT_EQ(0, stream->available());
     ASSERT_EQ(0, stream->read());
+
+    stream->print("TEST_STRING");
+    ASSERT_STREQ(testSupport.getTxBuffer().c_str(), "TEST_STRING");
 }
 
 TEST_F(ModemTest, ReturnOKWhenWaitForResponse)

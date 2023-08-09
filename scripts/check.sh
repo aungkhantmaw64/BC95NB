@@ -1,0 +1,1 @@
+pio check -e native
