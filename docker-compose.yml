@@ -10,6 +10,7 @@ services:
       - /bin/sh
       - -c
       - |
-        pio test -e native -vvv --without-uploading
-        pio check -e native
+        ./scripts/test.sh
+        ./scripts/check.sh
     container_name: platformio
+    tty: true
