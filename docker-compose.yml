@@ -1,0 +1,15 @@
+services:
+  platformio:
+    build:
+      context: .
+      dockerfile: pio.Dockerfile
+    volumes:
+      - .:/home/BC95NB:rw
+    working_dir: /home/BC95NB
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        pio test -e native -vvv --without-uploading
+        pio check -e native
+    container_name: platformio
