@@ -14,7 +14,10 @@ enum class BC95NBState
     QUERY_NET_REGISTRATION,
     WAIT_QUERY_NET_REGISTRATION_RESPONSE,
     QUERY_NET_ATTACHMENT,
-    WAIT_QUERY_NET_ATTACHMENT_RESPONSE
+    WAIT_QUERY_NET_ATTACHMENT_RESPONSE,
+    QUERY_IP_ADDR,
+    WAIT_QUERY_IP_ADDR_RESPONSE,
+    NET_READY
 };
 
 class BC95NB
@@ -93,6 +96,33 @@ public:
             m_state = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
             break;
         }
+        case BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE:
+        {
+            m_stdModem.wait(300, STD_AtCmd::CGATT);
+            CGATT_t cgatt;
+            m_stdModem.getCGATT(&cgatt);
+            if (cgatt.state == 1)
+                m_state = BC95NBState::QUERY_IP_ADDR;
+            break;
+        }
+        case BC95NBState::QUERY_IP_ADDR:
+        {
+            m_stdModem.readCmd(STD_AtCmd::CGPADDR);
+            m_state = BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE;
+            break;
+        }
+        case BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE:
+        {
+            m_stdModem.wait(300, STD_AtCmd::CGPADDR);
+            CGPADDR_t cgpaddr;
+            m_stdModem.getCGPADDR(&cgpaddr);
+            if (cgpaddr.ipaddr[0] != 0)
+            {
+                m_state = BC95NBState::NET_READY;
+                strcpy(m_ipAddress, cgpaddr.ipaddr);
+            }
+            break;
+        }
         }
         return m_state;
     }
@@ -101,12 +131,17 @@ public:
     {
         strncpy(_imsi, m_imsi, STD_MODEM_MAX_IMSI_LENGTH);
     }
+    void getIpAddress(char *_ipAddr)
+    {
+        strcpy(_ipAddr, m_ipAddress);
+    }
 
 private:
     BC95NBState m_state;
     StdModem m_stdModem;
 
     char m_imsi[STD_MODEM_MAX_IMSI_LENGTH];
+    char m_ipAddress[STD_MODEM_MAX_IP_ADDR_LENGTH];
 };
 
 class BC95NBTest : public ::testing::Test
@@ -144,7 +179,9 @@ static BC95NB *BC95NB_BEGIN_QUERY_RESPONSE_TEST(const char *_givenResponse, BC95
     testSupport.putRxBuffer(_givenResponse);
     BC95NB *nb = new BC95NB(modem);
     nb->setState(_givenState);
+
     BC95NBState state = nb->begin();
+
     EXPECT_EQ(state, _expectedState);
     return nb;
 }
@@ -208,6 +245,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_ATTACHMENT)
     BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
     BC95NBState expectedState = BC95NBState::QUERY_NET_ATTACHMENT;
     BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+    delete nb;
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_ATTACHMENT_RESPONSE)
@@ -216,6 +254,36 @@ TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_ATTACHMENT_RESPONSE)
     BC95NBState givenState = BC95NBState::QUERY_NET_ATTACHMENT;
     BC95NBState expectedState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
+}
+
+TEST_F(BC95NBTest, begin_ShouldReturnQUERY_IP_ADDR)
+{
+    const char *givenResponse = "\r\n+CGATT:1\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_IP_ADDR;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+    delete nb;
+}
+
+TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_IP_ADDR_RESPONSE)
+{
+    const char *expectedCmd = "AT+CGPADDR\r\n";
+    BC95NBState givenState = BC95NBState::QUERY_IP_ADDR;
+    BC95NBState expectedState = BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE;
+    BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
+}
+
+TEST_F(BC95NBTest, begin_ShouldReturnNET_READY)
+{
+    const char *givenResponse = "\r\n+CGPADDR:0,10.169.241.248\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE;
+    BC95NBState expectedState = BC95NBState::NET_READY;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+
+    char ipAddress[30];
+    nb->getIpAddress(ipAddress);
+    EXPECT_STREQ("10.169.241.248", ipAddress);
+    delete nb;
 }
 
 int main(int argc, char **argv)
