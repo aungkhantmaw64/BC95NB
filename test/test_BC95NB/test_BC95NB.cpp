@@ -125,6 +125,30 @@ protected:
     }
 };
 
+static void BC95NB_BEGIN_QUERY_TEST(const char *_expectedCmd, BC95NBState _givenState, BC95NBState _expectedState)
+{
+    Modem *modem = modemBuilder->buildModem();
+    BC95NB nb(modem);
+    nb.setState(_givenState);
+    BC95NBState state = nb.begin();
+    EXPECT_EQ(state, _expectedState);
+    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), _expectedCmd);
+}
+
+static BC95NB *BC95NB_BEGIN_QUERY_RESPONSE_TEST(const char *_givenResponse, BC95NBState _givenState, BC95NBState _expectedState)
+{
+    std::cout << "When receiving: "
+              << _givenResponse
+              << std::endl;
+    Modem *modem = modemBuilder->buildModem();
+    testSupport.putRxBuffer(_givenResponse);
+    BC95NB *nb = new BC95NB(modem);
+    nb->setState(_givenState);
+    BC95NBState state = nb->begin();
+    EXPECT_EQ(state, _expectedState);
+    return nb;
+}
+
 TEST_F(BC95NBTest, begin_ShouldReturnQUERY_RF_FUNC)
 {
     Modem *modem = modemBuilder->buildModem();
@@ -134,83 +158,64 @@ TEST_F(BC95NBTest, begin_ShouldReturnQUERY_RF_FUNC)
 
 TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_RF_FUNC_RESPONSE)
 {
-    Modem *modem = modemBuilder->buildModem();
-    BC95NB nb(modem);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE);
-    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CFUN?\r\n");
+    const char *expectedCmd = "AT+CFUN?\r\n";
+    BC95NBState givenState = BC95NBState::QUERY_RF_FUNC;
+    BC95NBState expectedState = BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE;
+    BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnQUERY_IMSI)
 {
-    std::cout << "When receiving: "
-              << "\r\n+CFUN:1\r\n\r\nOK\r\n"
-              << std::endl;
-    Modem *modem = modemBuilder->buildModem();
-    testSupport.putRxBuffer("\r\n+CFUN:1\r\nOK\r\n");
-    BC95NB nb(modem);
-    nb.setState(BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::QUERY_IMSI);
+    const char *givenResponse = "\r\n+CFUN:1\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_IMSI;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+    delete nb;
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_IMSI_RESPONSE)
 {
-    Modem *modem = modemBuilder->buildModem();
-    BC95NB nb(modem);
-    nb.setState(BC95NBState::QUERY_IMSI);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::WAIT_QUERY_IMSI_RESPONSE);
-    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CIMI\r\n");
+    const char *expectedCmd = "AT+CIMI\r\n";
+    BC95NBState givenState = BC95NBState::QUERY_IMSI;
+    BC95NBState expectedState = BC95NBState::WAIT_QUERY_IMSI_RESPONSE;
+    BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_REGISTRATION)
 {
-    std::cout << "When receiving: "
-              << "\r\n460111174590523\r\n\r\nOK\r\n"
-              << std::endl;
-    testSupport.putRxBuffer("\r\n460111174590523\r\n\r\nOK\r\n");
-    Modem *modem = modemBuilder->buildModem();
-    BC95NB nb(modem);
-    nb.setState(BC95NBState::WAIT_QUERY_IMSI_RESPONSE);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::QUERY_NET_REGISTRATION);
+    const char *givenResponse = "\r\n460111174590523\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_IMSI_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_NET_REGISTRATION;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+
     char imsi[STD_MODEM_MAX_IMSI_LENGTH];
-    nb.getIMSI(imsi);
+    nb->getIMSI(imsi);
     EXPECT_STREQ("460111174590523", imsi);
+    delete nb;
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_REGISTRATION_RESPONSE)
 {
-    Modem *modem = modemBuilder->buildModem();
-    BC95NB nb(modem);
-    nb.setState(BC95NBState::QUERY_NET_REGISTRATION);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE);
-    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CEREG?\r\n");
+    const char *expectedCmd = "AT+CEREG?\r\n";
+    BC95NBState givenState = BC95NBState::QUERY_NET_REGISTRATION;
+    BC95NBState expectedState = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
+    BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_ATTACHMENT)
 {
-    std::cout << "When receiving: "
-              << "\r\n+CEREG:0,1\r\n\r\nOK\r\n"
-              << std::endl;
-    testSupport.putRxBuffer("\r\n+CEREG:0,1\r\n\r\nOK\r\n");
-    Modem *modem = modemBuilder->buildModem();
-    BC95NB nb(modem);
-    nb.setState(BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::QUERY_NET_ATTACHMENT);
+    const char *givenResponse = "\r\n+CEREG:0,1\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_NET_ATTACHMENT;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
 }
 
 TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_ATTACHMENT_RESPONSE)
 {
-    Modem *modem = modemBuilder->buildModem();
-    BC95NB nb(modem);
-    nb.setState(BC95NBState::QUERY_NET_ATTACHMENT);
-    BC95NBState state = nb.begin();
-    EXPECT_EQ(state, BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE);
-    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), "AT+CGATT?\r\n");
+    const char *expectedCmd = "AT+CGATT?\r\n";
+    BC95NBState givenState = BC95NBState::QUERY_NET_ATTACHMENT;
+    BC95NBState expectedState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
+    BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
 int main(int argc, char **argv)
