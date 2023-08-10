@@ -20,4 +20,8 @@ RUN python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platfo
 
 ENV PATH="/root/.platformio/penv/bin:$PATH"
 
-WORKDIR /usr/workspace/
+COPY ./ /home/BC95NB
+
+WORKDIR /home/BC95NB
+
+CMD ["bash", "-c", "scripts/test.sh"]
