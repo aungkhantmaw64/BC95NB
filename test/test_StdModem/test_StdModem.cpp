@@ -26,7 +26,8 @@ TEST_F(StdModemTest, getCFUN)
     Modem *modem = modemBuilder->buildModem();
     testSupport.putRxBuffer("\r\n+CFUN:1\r\nOK\r\n");
 
-    StdModem stdModem(*modem);
+    StdModem stdModem;
+    stdModem.attach(modem);
     CFUN_t cfun;
 
     stdModem.readCmd(STD_AtCmd::CFUN);
@@ -42,7 +43,8 @@ TEST_F(StdModemTest, getCIMI)
     Modem *modem = modemBuilder->buildModem();
     testSupport.putRxBuffer("\r\n460111174590523\r\nOK\r\n");
 
-    StdModem stdModem(*modem);
+    StdModem stdModem;
+    stdModem.attach(modem);
     CIMI_t cimi;
 
     stdModem.readCmd(STD_AtCmd::CIMI);
@@ -60,7 +62,8 @@ TEST_F(StdModemTest, getCEREG)
     Modem *modem = modemBuilder->buildModem();
     testSupport.putRxBuffer("\r\n+CEREG:0,5\r\nOK\r\n");
 
-    StdModem stdModem(*modem);
+    StdModem stdModem;
+    stdModem.attach(modem);
     CEREG_t cereg;
 
     stdModem.readCmd(STD_AtCmd::CEREG);
@@ -77,7 +80,8 @@ TEST_F(StdModemTest, getCGATT)
     Modem *modem = modemBuilder->buildModem();
     testSupport.putRxBuffer("\r\n+CGATT:1\r\nOK\r\n");
 
-    StdModem stdModem(*modem);
+    StdModem stdModem;
+    stdModem.attach(modem);
     CGATT_t cgatt;
 
     stdModem.readCmd(STD_AtCmd::CGATT);
@@ -93,7 +97,8 @@ TEST_F(StdModemTest, getCGPADDR)
     Modem *modem = modemBuilder->buildModem();
     testSupport.putRxBuffer("\r\n+CGPADDR:0,10.169.241.288\r\nOK\r\n");
 
-    StdModem stdModem(*modem);
+    StdModem stdModem;
+    stdModem.attach(modem);
     CGPADDR_t cgpaddr;
 
     stdModem.readCmd(STD_AtCmd::CGPADDR);

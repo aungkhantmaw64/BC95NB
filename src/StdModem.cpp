@@ -1,7 +1,6 @@
 #include "StdModem.h"
 
-StdModem::StdModem(Modem &_modem)
-    : m_modem(_modem)
+StdModem::StdModem()
 {
 }
 
@@ -9,33 +8,38 @@ StdModem::~StdModem()
 {
 }
 
-void StdModem::readCmd(STD_AtCmd cmd)
+void StdModem::attach(Modem *_modem)
 {
-    switch (cmd)
+    m_modem = _modem;
+}
+
+void StdModem::readCmd(STD_AtCmd _cmd)
+{
+    switch (_cmd)
     {
     case STD_AtCmd::CFUN:
     {
-        m_modem.send("AT+CFUN?\r\n");
+        m_modem->send("AT+CFUN?\r\n");
         break;
     }
     case STD_AtCmd::CIMI:
     {
-        m_modem.send("AT+CIMI\r\n");
+        m_modem->send("AT+CIMI\r\n");
         break;
     }
     case STD_AtCmd::CEREG:
     {
-        m_modem.send("AT+CEREG?\r\n");
+        m_modem->send("AT+CEREG?\r\n");
         break;
     }
     case STD_AtCmd::CGATT:
     {
-        m_modem.send("AT+CGATT?\r\n");
+        m_modem->send("AT+CGATT?\r\n");
         break;
     }
     case STD_AtCmd::CGPADDR:
     {
-        m_modem.send("AT+CGPADDR\r\n");
+        m_modem->send("AT+CGPADDR\r\n");
         break;
     }
     default:
@@ -43,14 +47,14 @@ void StdModem::readCmd(STD_AtCmd cmd)
     }
 }
 
-void StdModem::wait(uint32_t timeoutMs, STD_AtCmd cmd)
+void StdModem::wait(uint32_t _timeoutMs, STD_AtCmd _cmd)
 {
     String response;
-    ResponseCode retCode = m_modem.waitForResponse(timeoutMs, &response);
+    ResponseCode retCode = m_modem->waitForResponse(_timeoutMs, &response);
     response.trim();
     if (retCode == ResponseCode::OK)
     {
-        switch (cmd)
+        switch (_cmd)
         {
         case STD_AtCmd::CFUN:
         {

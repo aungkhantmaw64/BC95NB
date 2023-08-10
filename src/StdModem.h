@@ -5,6 +5,7 @@
 #include <Arduino.h>
 
 #define STD_MODEM_MAX_IMSI_LENGTH 16
+#define STD_MODEM_MAX_IP_ADDR_LENGTH 30
 
 enum class STD_AtCmd
 {
@@ -39,16 +40,17 @@ typedef struct CGATT
 typedef struct CGPADDR
 {
     uint8_t cid;
-    char ipaddr[20];
+    char ipaddr[STD_MODEM_MAX_IP_ADDR_LENGTH];
 } CGPADDR_t;
 
 class StdModem
 {
 public:
-    StdModem(Modem &_modem);
+    StdModem();
     ~StdModem();
-    void readCmd(STD_AtCmd cmd);
-    void wait(uint32_t timeoutMs, STD_AtCmd cmd);
+    void attach(Modem *_modem);
+    void readCmd(STD_AtCmd _cmd);
+    void wait(uint32_t _timeoutMs, STD_AtCmd _cmd);
     void getCFUN(CFUN_t *_result);
     void getCIMI(CIMI_t *_result);
     void getCEREG(CEREG_t *_result);
@@ -56,7 +58,7 @@ public:
     void getCGPADDR(CGPADDR_t *_result);
 
 private:
-    Modem &m_modem;
+    Modem *m_modem;
     CFUN_t m_cfun;
     CEREG_t m_cereg;
     CIMI_t m_cimi;

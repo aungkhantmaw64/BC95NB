@@ -1,1 +1,1 @@
-pio test -e native -vvv --without-uploading --program-arg "--gtest_color=yes"
+pio test -e native -vvv 
