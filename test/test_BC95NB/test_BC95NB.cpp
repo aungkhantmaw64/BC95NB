@@ -47,14 +47,14 @@ static BC95NB *BC95NB_BEGIN_QUERY_RESPONSE_TEST(const char *_givenResponse, BC95
     return nb;
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnQUERY_RF_FUNC)
+TEST_F(BC95NBTest, StartWithQueryingRadioFunction)
 {
     Modem *modem = modemBuilder->buildModem();
     BC95NB nb(modem);
     EXPECT_EQ(nb.getState(), BC95NBState::QUERY_RF_FUNC);
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_RF_FUNC_RESPONSE)
+TEST_F(BC95NBTest, QueryCFUN)
 {
     const char *expectedCmd = "AT+CFUN?\r\n";
     BC95NBState givenState = BC95NBState::QUERY_RF_FUNC;
@@ -62,7 +62,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_RF_FUNC_RESPONSE)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnQUERY_IMSI)
+TEST_F(BC95NBTest, WaitCFUNAndGetExpectedState)
 {
     const char *givenResponse = "\r\n+CFUN:1\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE;
@@ -71,7 +71,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnQUERY_IMSI)
     delete nb;
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_IMSI_RESPONSE)
+TEST_F(BC95NBTest, QueryIMSI)
 {
     const char *expectedCmd = "AT+CIMI\r\n";
     BC95NBState givenState = BC95NBState::QUERY_IMSI;
@@ -79,7 +79,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_IMSI_RESPONSE)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_REGISTRATION)
+TEST_F(BC95NBTest, WaitIMSIAndGetExpectedState)
 {
     const char *givenResponse = "\r\n460111174590523\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_IMSI_RESPONSE;
@@ -92,7 +92,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_REGISTRATION)
     delete nb;
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_REGISTRATION_RESPONSE)
+TEST_F(BC95NBTest, QueryCEREG)
 {
     const char *expectedCmd = "AT+CEREG?\r\n";
     BC95NBState givenState = BC95NBState::QUERY_NET_REGISTRATION;
@@ -100,7 +100,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_REGISTRATION_RESPONSE)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_ATTACHMENT)
+TEST_F(BC95NBTest, WaitCEREGAndGetExpectedState)
 {
     const char *givenResponse = "\r\n+CEREG:0,1\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
@@ -109,7 +109,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnQUERY_NET_ATTACHMENT)
     delete nb;
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_ATTACHMENT_RESPONSE)
+TEST_F(BC95NBTest, QueryCGATT)
 {
     const char *expectedCmd = "AT+CGATT?\r\n";
     BC95NBState givenState = BC95NBState::QUERY_NET_ATTACHMENT;
@@ -117,7 +117,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_NET_ATTACHMENT_RESPONSE)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnQUERY_IP_ADDR)
+TEST_F(BC95NBTest, WaitCGATTAndGetExpectedState)
 {
     const char *givenResponse = "\r\n+CGATT:1\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
@@ -126,7 +126,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnQUERY_IP_ADDR)
     delete nb;
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_IP_ADDR_RESPONSE)
+TEST_F(BC95NBTest, QueryIpAddress)
 {
     const char *expectedCmd = "AT+CGPADDR\r\n";
     BC95NBState givenState = BC95NBState::QUERY_IP_ADDR;
@@ -134,7 +134,7 @@ TEST_F(BC95NBTest, begin_ShouldReturnWAIT_QUERY_IP_ADDR_RESPONSE)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, begin_ShouldReturnNET_READY)
+TEST_F(BC95NBTest, WaitIpAddressAndGetExpectedState)
 {
     const char *givenResponse = "\r\n+CGPADDR:0,10.169.241.248\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE;
