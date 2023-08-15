@@ -72,6 +72,7 @@ public:
     void setupMocks(void)
     {
         // Digital I/O
+        When(Method(ArduinoFake(), pinMode)).AlwaysReturn();
         When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
 
         // Stream and serial communications

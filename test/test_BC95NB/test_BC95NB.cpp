@@ -90,7 +90,7 @@ TEST_F(BC95NBTest, QueryIMSI)
 
 TEST_F(BC95NBTest, ProccedToQueryingNetRegistration_GivenImsiResponse)
 {
-    const char *givenResponse = "\r\n460111174590523\r\n\r\nOK\r\n";
+    const char *givenResponse = "\r\nAT+CIMI\r\n460111174590523\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_IMSI_RESPONSE;
     BC95NBState expectedState = BC95NBState::QUERY_NET_REGISTRATION;
     BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
@@ -146,7 +146,7 @@ TEST_F(BC95NBTest, ProceedToQueryingIpAddress_GivenTheNetworkIsAttached)
 
 TEST_F(BC95NBTest, RevertToQueryingIpAddress_GivenTheNetworkIsNotAttached)
 {
-    const char *givenResponse = "\r\n+CGATT:0\r\n\r\nOK\r\n";
+    const char *givenResponse = "\r\nAT+CGATT?\r\n+CGATT:0\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
     BC95NBState expectedState = BC95NBState::QUERY_NET_ATTACHMENT;
     BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
