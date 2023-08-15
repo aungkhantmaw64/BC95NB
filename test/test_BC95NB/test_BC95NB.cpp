@@ -62,11 +62,20 @@ TEST_F(BC95NBTest, QueryCFUN)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, WaitCFUNAndGetExpectedState)
+TEST_F(BC95NBTest, ProceedToQueryingImsi_GivenFullFunctionalityUE)
 {
     const char *givenResponse = "\r\n+CFUN:1\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE;
     BC95NBState expectedState = BC95NBState::QUERY_IMSI;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+    delete nb;
+}
+
+TEST_F(BC95NBTest, RevertToQueryingRfFunc_GivenNonFullFunctionalityUE)
+{
+    const char *givenResponse = "\r\n+CFUN:0\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_RF_FUNC;
     BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
     delete nb;
 }
@@ -79,7 +88,7 @@ TEST_F(BC95NBTest, QueryIMSI)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, WaitIMSIAndGetExpectedState)
+TEST_F(BC95NBTest, ProccedToQueryingNetRegistration_GivenImsiResponse)
 {
     const char *givenResponse = "\r\n460111174590523\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_IMSI_RESPONSE;
@@ -100,11 +109,20 @@ TEST_F(BC95NBTest, QueryCEREG)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, WaitCEREGAndGetExpectedState)
+TEST_F(BC95NBTest, ProceedToQueryingNetworkAttachment_GivenTheNetworkIsRegistered)
 {
     const char *givenResponse = "\r\n+CEREG:0,1\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
     BC95NBState expectedState = BC95NBState::QUERY_NET_ATTACHMENT;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+    delete nb;
+}
+
+TEST_F(BC95NBTest, RevertToQueryingNetRegistration_GivenTheNetworkIsNotRegistered)
+{
+    const char *givenResponse = "\r\n+CEREG:0,0\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_NET_REGISTRATION;
     BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
     delete nb;
 }
@@ -117,11 +135,20 @@ TEST_F(BC95NBTest, QueryCGATT)
     BC95NB_BEGIN_QUERY_TEST(expectedCmd, givenState, expectedState);
 }
 
-TEST_F(BC95NBTest, WaitCGATTAndGetExpectedState)
+TEST_F(BC95NBTest, ProceedToQueryingIpAddress_GivenTheNetworkIsAttached)
 {
     const char *givenResponse = "\r\n+CGATT:1\r\n\r\nOK\r\n";
     BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
     BC95NBState expectedState = BC95NBState::QUERY_IP_ADDR;
+    BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
+    delete nb;
+}
+
+TEST_F(BC95NBTest, RevertToQueryingIpAddress_GivenTheNetworkIsNotAttached)
+{
+    const char *givenResponse = "\r\n+CGATT:0\r\n\r\nOK\r\n";
+    BC95NBState givenState = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
+    BC95NBState expectedState = BC95NBState::QUERY_NET_ATTACHMENT;
     BC95NB *nb = BC95NB_BEGIN_QUERY_RESPONSE_TEST(givenResponse, givenState, expectedState);
     delete nb;
 }

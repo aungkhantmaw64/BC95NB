@@ -38,6 +38,8 @@ BC95NBState BC95NB::begin()
         m_stdModem.getCFUN(&cfun);
         if (cfun.fun == 1)
             m_state = BC95NBState::QUERY_IMSI;
+        else
+            m_state = BC95NBState::QUERY_RF_FUNC;
         break;
     }
     case BC95NBState::QUERY_IMSI:
@@ -71,6 +73,8 @@ BC95NBState BC95NB::begin()
         m_stdModem.getCEREG(&cereg);
         if (cereg.stat == 1)
             m_state = BC95NBState::QUERY_NET_ATTACHMENT;
+        else
+            m_state = BC95NBState::QUERY_NET_REGISTRATION;
         break;
     }
     case BC95NBState::QUERY_NET_ATTACHMENT:
@@ -86,6 +90,8 @@ BC95NBState BC95NB::begin()
         m_stdModem.getCGATT(&cgatt);
         if (cgatt.state == 1)
             m_state = BC95NBState::QUERY_IP_ADDR;
+        else
+            m_state = BC95NBState::QUERY_NET_ATTACHMENT;
         break;
     }
     case BC95NBState::QUERY_IP_ADDR:
