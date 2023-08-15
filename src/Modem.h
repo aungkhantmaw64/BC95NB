@@ -6,7 +6,7 @@
 #define MODEM_CMD_MAX_SIZE 100
 #define MODEM_MAX_RESPONSE_HANDLERS 4
 
-enum ResponseCode
+enum class ResponseCode
 {
     EMPTY,
     OK,
