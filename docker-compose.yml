@@ -1,0 +1,10 @@
+services:
+  platformio:
+    build: 
+      context: ./
+      dockerfile: pio.Dockerfile
+    image: pio:test_env
+    container_name: pio_container
+    tty: true
+    working_dir: /home/BC95NB
+
