@@ -68,6 +68,10 @@ void StdModem::wait(uint32_t _timeoutMs, STD_AtCmd _cmd)
         {
             response.replace("\r\n", "");
             response.trim();
+            if (response.indexOf("AT+CIMI") != -1)
+            {
+                response.replace("AT+CIMI", "");
+            }
             if (isdigit(response.charAt(0)) && (retCode == ResponseCode::OK))
             {
                 response.remove(STD_MODEM_MAX_IMSI_LENGTH - 1, response.length() - 1);
@@ -85,7 +89,7 @@ void StdModem::wait(uint32_t _timeoutMs, STD_AtCmd _cmd)
         }
         case STD_AtCmd::CGATT:
         {
-            int8_t state_index = response.indexOf("+CGATT") + strlen("+CGATT:");
+            int8_t state_index = response.indexOf("+CGATT:") + strlen("+CGATT:");
             m_cgatt.state = response.charAt(state_index) - '0';
         }
         case STD_AtCmd::CGPADDR:

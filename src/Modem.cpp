@@ -1,10 +1,12 @@
 #include "Modem.h"
 
-Modem::Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh)
+Modem::Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh, Stream *_debugStream)
     : m_stream(_stream),
       m_resetPin(_resetPin),
-      m_activeHigh(_activeHigh)
+      m_activeHigh(_activeHigh),
+      m_debugStream(_debugStream)
 {
+    pinMode(m_resetPin, OUTPUT);
 }
 
 void Modem::reset()
@@ -30,6 +32,10 @@ ResponseCode Modem::waitForResponse(uint32_t _timeoutMs, String *_response)
         if (m_stream.available())
         {
             char ch = m_stream.read();
+            if (m_debugStream)
+            {
+                m_debugStream->print(ch);
+            }
             response += ch;
             if (_response)
                 *_response += ch;

@@ -22,7 +22,7 @@ public:
 class Modem
 {
 public:
-    Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh);
+    Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh, Stream *_debugStream = nullptr);
     void reset();
     void send(const char *_cmd);
     ResponseCode waitForResponse(uint32_t _timeoutMs, String *_response = nullptr);
@@ -30,6 +30,7 @@ public:
 
 private:
     Stream &m_stream;
+    Stream *m_debugStream;
     uint8_t m_resetPin;
     bool m_activeHigh;
     ModemUrcHandler *m_respHandlers[MODEM_MAX_RESPONSE_HANDLERS] = {nullptr};
