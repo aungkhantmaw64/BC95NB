@@ -5,6 +5,7 @@
 #include "Modem.h"
 #include "StdModem.h"
 #include "BC95NB.h"
+#include "BC95NBExt.h"
 
 #include <vector>
 
