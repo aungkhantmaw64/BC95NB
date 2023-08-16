@@ -10,6 +10,14 @@ BC95NBExt::~BC95NBExt()
 {
 }
 
+void BC95NBExt::configDnsServerAddr(const char *primaryAddr, const char *secondaryAddr)
+{
+    char cmd[BC95_MQTT_MAX_CMD_LENGTH];
+    snprintf(cmd, BC95_MQTT_MAX_CMD_LENGTH, "AT+QIDNSCFG=%s,%s\r\n", primaryAddr, secondaryAddr);
+    m_modem->send(cmd);
+    m_modem->waitForResponse(1000);
+}
+
 MqttState BC95NBExt::connect(const char *host, int port, const char *clientId, const char *userName, const char *password)
 {
     switch (m_state)
@@ -26,17 +34,14 @@ MqttState BC95NBExt::connect(const char *host, int port, const char *clientId, c
     {
         String response;
         ResponseCode retcode = m_modem->waitForResponse(1000, &response);
-        if (retcode == ResponseCode::OK)
+        int resIndex = response.indexOf("+QMTOPEN:");
+        if (resIndex != -1)
         {
-            int resIndex = response.indexOf("+QMTOPEN:");
-            if (resIndex != -1)
-            {
-                resIndex += strlen("+QMTOPEN:");
-                resIndex = response.indexOf(",", resIndex) + 1;
-                int res = response.charAt(resIndex) - '0';
-                if (res == 0)
-                    m_state = MqttState::CONNECT_TO_SERVER;
-            }
+            resIndex += strlen("+QMTOPEN:");
+            resIndex = response.indexOf(",", resIndex) + 1;
+            int res = response.charAt(resIndex) - '0';
+            if (res == 0)
+                m_state = MqttState::CONNECT_TO_SERVER;
         }
         break;
     }
@@ -51,20 +56,17 @@ MqttState BC95NBExt::connect(const char *host, int port, const char *clientId, c
     case MqttState::WAIT_CONNECT_TO_SERVER_RESPONSE:
     {
         String response;
-        ResponseCode retCode = m_modem->waitForResponse(5000, &response);
-        if (retCode == ResponseCode::OK)
+        ResponseCode retCode = m_modem->waitForResponse(1000, &response);
+        int index = response.indexOf("+QMTCONN:");
+        if (index != -1)
         {
-            int index = response.indexOf("+QMTCONN:");
-            if (index != -1)
-            {
-                index += strlen("+QMTCONN:");
-                int resultIndex = response.indexOf(",", index) + 1;
-                int retCodeIndex = response.indexOf(",", resultIndex) + 1;
-                int result = response.charAt(resultIndex) - '0';
-                int retCode = response.charAt(retCodeIndex) - '0';
-                if ((retCode == 0))
-                    m_state = MqttState::READY;
-            }
+            index += strlen("+QMTCONN:");
+            int resultIndex = response.indexOf(",", index) + 1;
+            int retCodeIndex = response.indexOf(",", resultIndex) + 1;
+            int result = response.charAt(resultIndex) - '0';
+            int retCode = response.charAt(retCodeIndex) - '0';
+            if ((result == 0) || (retCode == 0))
+                m_state = MqttState::READY;
         }
         break;
     }

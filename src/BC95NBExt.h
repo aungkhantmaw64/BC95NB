@@ -20,6 +20,7 @@ public:
     BC95NBExt(Modem *_modem);
     ~BC95NBExt();
     MqttState connect(const char *host, int port, const char *clientId, const char *userName, const char *password);
+    void configDnsServerAddr(const char *primaryAddr, const char *secondaryAddr);
     void setState(MqttState state) { m_state = state; }
     MqttState getState(void) { return m_state; }
 
