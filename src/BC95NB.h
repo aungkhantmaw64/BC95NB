@@ -1,69 +1,40 @@
-#ifndef D_BC95NB_H
-#define D_BC95NB_H
+#ifndef BC95NB_SRC_BC95NB_H
+#define BC95NB_SRC_BC95NB_H
 
-#include "Modem.h"
-#include "BC95.h"
+#include "StdModem.h"
 
-enum
+enum class BC95NBState
 {
-    NB_IDLE,
-    NB_MODEM_AWAKEN,
-    NB_NETWORK_REGISTERED,
-    NB_NETWORK_ATTACHED
+    QUERY_RF_FUNC,
+    WAIT_QUERY_RF_FUNC_RESPONSE,
+    QUERY_IMSI,
+    WAIT_QUERY_IMSI_RESPONSE,
+    QUERY_NET_REGISTRATION,
+    WAIT_QUERY_NET_REGISTRATION_RESPONSE,
+    QUERY_NET_ATTACHMENT,
+    WAIT_QUERY_NET_ATTACHMENT_RESPONSE,
+    QUERY_IP_ADDR,
+    WAIT_QUERY_IP_ADDR_RESPONSE,
+    NET_READY
 };
 
-class NBClass
+class BC95NB
 {
 public:
-    /**
-     * @brief Construct a new NBClass object
-     *
-     * @param modem
-     */
-    NBClass(Modem *modem);
-    /**
-     * @brief Destroy the NBClass object
-     *
-     */
-    ~NBClass();
-    /**
-     * @brief
-     *
-     * @return int
-     */
-    int begin();
-    /**
-     * @brief
-     *
-     * @param band
-     * @return int
-     */
-    int begin(int band);
-    /**
-     * @brief
-     *
-     * @return String
-     */
-    String getIPAddress();
-    /**
-     * @brief
-     *
-     * @return String
-     */
-    String getIMSI();
-    /**
-     * @brief
-     *
-     * @return int
-     */
-    int reset(void);
+    BC95NB(Modem *modem);
+    ~BC95NB();
+    BC95NBState getState();
+    void setState(BC95NBState _state);
+    BC95NBState begin();
+    void getIMSI(char *_imsi);
+    void getIpAddress(char *_ipAddr);
 
 private:
-    Modem *modem_;
-    int connectionState_;
-    String buffer_;
-    String ip_;
-    String imsi_;
+    BC95NBState m_state;
+    StdModem m_stdModem;
+
+    char m_imsi[STD_MODEM_MAX_IMSI_LENGTH];
+    char m_ipAddress[STD_MODEM_MAX_IP_ADDR_LENGTH];
 };
 
 #endif

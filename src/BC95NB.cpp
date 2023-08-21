@@ -1,92 +1,127 @@
 #include "BC95NB.h"
 
-NBClass::NBClass(Modem *modem)
-    : modem_(modem),
-      connectionState_(NB_IDLE)
+BC95NB::BC95NB(Modem *modem)
+    : m_state(BC95NBState::QUERY_RF_FUNC)
 {
-    buffer_.reserve(100);
+    m_stdModem.attach(modem);
+    memset(m_imsi, 0, STD_MODEM_MAX_IMSI_LENGTH);
 }
 
-NBClass::~NBClass()
+BC95NB::~BC95NB()
 {
 }
 
-int NBClass::begin()
+BC95NBState BC95NB::getState()
 {
-    switch (connectionState_)
+    return m_state;
+}
+
+void BC95NB::setState(BC95NBState _state)
+{
+    m_state = _state;
+}
+
+BC95NBState BC95NB::begin()
+{
+    switch (m_state)
     {
-    case NB_IDLE:
+    case BC95NBState::QUERY_RF_FUNC:
     {
-        modem_->send("AT+CFUN?");
-        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+        m_stdModem.readCmd(STD_AtCmd::CFUN);
+        m_state = BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE;
+        break;
+    }
+    case BC95NBState::WAIT_QUERY_RF_FUNC_RESPONSE:
+    {
+        m_stdModem.wait(300, STD_AtCmd::CFUN);
+        CFUN_t cfun;
+        m_stdModem.getCFUN(&cfun);
+        if (cfun.fun == 1)
+            m_state = BC95NBState::QUERY_IMSI;
+        else
+            m_state = BC95NBState::QUERY_RF_FUNC;
+        break;
+    }
+    case BC95NBState::QUERY_IMSI:
+    {
+        m_stdModem.readCmd(STD_AtCmd::CIMI);
+        m_state = BC95NBState::WAIT_QUERY_IMSI_RESPONSE;
+        break;
+    }
+    case BC95NBState::WAIT_QUERY_IMSI_RESPONSE:
+    {
+        m_stdModem.wait(300, STD_AtCmd::CIMI);
+        CIMI_t cimi;
+        m_stdModem.getCIMI(&cimi);
+        if (cimi.imsi[0] != 0)
         {
-            if (buffer_.indexOf("+CFUN:1") != -1)
-            {
-                connectionState_ = NB_MODEM_AWAKEN;
-            }
+            strncpy(m_imsi, cimi.imsi, STD_MODEM_MAX_IMSI_LENGTH);
+            m_state = BC95NBState::QUERY_NET_REGISTRATION;
         }
         break;
     }
-    case NB_MODEM_AWAKEN:
+    case BC95NBState::QUERY_NET_REGISTRATION:
     {
-        modem_->send("AT+CEREG?");
-        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
+        m_stdModem.readCmd(STD_AtCmd::CEREG);
+        m_state = BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE;
+        break;
+    }
+    case BC95NBState::WAIT_QUERY_NET_REGISTRATION_RESPONSE:
+    {
+        m_stdModem.wait(300, STD_AtCmd::CEREG);
+        CEREG_t cereg;
+        m_stdModem.getCEREG(&cereg);
+        if (cereg.stat == 1)
+            m_state = BC95NBState::QUERY_NET_ATTACHMENT;
+        else
+            m_state = BC95NBState::QUERY_NET_REGISTRATION;
+        break;
+    }
+    case BC95NBState::QUERY_NET_ATTACHMENT:
+    {
+        m_stdModem.readCmd(STD_AtCmd::CGATT);
+        m_state = BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE;
+        break;
+    }
+    case BC95NBState::WAIT_QUERY_NET_ATTACHMENT_RESPONSE:
+    {
+        m_stdModem.wait(300, STD_AtCmd::CGATT);
+        CGATT_t cgatt;
+        m_stdModem.getCGATT(&cgatt);
+        if (cgatt.state == 1)
+            m_state = BC95NBState::QUERY_IP_ADDR;
+        else
+            m_state = BC95NBState::QUERY_NET_ATTACHMENT;
+        break;
+    }
+    case BC95NBState::QUERY_IP_ADDR:
+    {
+        m_stdModem.readCmd(STD_AtCmd::CGPADDR);
+        m_state = BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE;
+        break;
+    }
+    case BC95NBState::WAIT_QUERY_IP_ADDR_RESPONSE:
+    {
+        m_stdModem.wait(300, STD_AtCmd::CGPADDR);
+        CGPADDR_t cgpaddr;
+        m_stdModem.getCGPADDR(&cgpaddr);
+        if (cgpaddr.ipaddr[0] != 0)
         {
-            if (buffer_.indexOf("+CEREG:0,1") != -1)
-            {
-                connectionState_ = NB_NETWORK_REGISTERED;
-            }
+            m_state = BC95NBState::NET_READY;
+            strcpy(m_ipAddress, cgpaddr.ipaddr);
         }
         break;
     }
-    case NB_NETWORK_REGISTERED:
-    {
-        modem_->send("AT+CGATT?");
-        if (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(300, &buffer_))
-        {
-            if (buffer_.indexOf("+CGATT:1") != -1)
-            {
-                modem_->send("AT+CIMI");
-                modem_->waitForResponse(300, &buffer_);
-                buffer_.replace("OK", "");
-                buffer_.trim();
-                imsi_ = buffer_;
-
-                modem_->send("AT+CGPADDR");
-                modem_->waitForResponse(300, &buffer_);
-                buffer_.replace("OK", "");
-                buffer_.replace("+CGPADDR:", "");
-                buffer_.trim();
-                ip_ = buffer_;
-
-                connectionState_ = NB_NETWORK_ATTACHED;
-            }
-        }
-        break;
     }
-    default:
-        break;
-    }
-    return connectionState_;
+    return m_state;
 }
 
-int NBClass::begin(int band)
+void BC95NB::getIMSI(char *_imsi)
 {
-    return NB_IDLE;
+    strncpy(_imsi, m_imsi, STD_MODEM_MAX_IMSI_LENGTH);
 }
 
-String NBClass::getIMSI(void)
+void BC95NB::getIpAddress(char *_ipAddr)
 {
-    return imsi_;
-}
-
-String NBClass::getIPAddress(void)
-{
-    return ip_;
-}
-
-int NBClass::reset()
-{
-    modem_->send("AT+NRB");
-    return (MODEM_STATUS_VALID_RESPONSE == modem_->waitForResponse(4000));
+    strcpy(_ipAddr, m_ipAddress);
 }

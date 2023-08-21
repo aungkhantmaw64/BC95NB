@@ -1,68 +1,39 @@
-#ifndef D_MODEM_H
-#define D_MODEM_H
+#ifndef BC95NB_SRC_MODEM_H
+#define BC95NB_SRC_MODEM_H
 
 #include <Arduino.h>
-#include <stdarg.h>
 
-enum
+#define MODEM_CMD_MAX_SIZE 100
+#define MODEM_MAX_RESPONSE_HANDLERS 4
+
+enum class ResponseCode
 {
-    MODEM_STATUS_VALID_RESPONSE,
-    MODEM_STATUS_INVALID_PARAMETERS,
-    MODEM_STATUS_TIMEOUT_ERROR,
-    MODEM_STATUS_URC_EVENT,
-    MODEM_STATUS_UNKNOWN,
+    EMPTY,
+    OK,
+    ERROR,
+    CME_ERROR
 };
 
-enum
+class ModemUrcHandler
 {
-    AT_STATE_READING,
-    AT_STATE_IDENTIFYING_RESPONSE,
-    AT_STATE_HANDLING_URC
+public:
+    virtual void onReceive(String &_response) = 0;
 };
-
 class Modem
 {
 public:
-    /**
-     * @brief Initializes the modem device
-     *
-     */
-    virtual void begin() = 0;
-    /**
-     * @brief Sends AT command to the modem device
-     *
-     * @param cmd The AT command to be sent
-     */
-    virtual void send(const char *cmd) = 0;
-    /**
-     * @brief Sends AT command to the modem device
-     *
-     * @param cmd The AT command to be sent
-     */
-    virtual void send(const String &cmd) = 0;
-    /**
-     * @brief Sends AT command to the modem device.
-     *        This method allows formatted string as the input.
-     *
-     * @param fmt The formatted string.
-     * @param ...
-     */
-    virtual void sendf(const char *fmt, ...) = 0;
-    /**
-     * @brief Wait for the response from the modem device until timeout occurs.
-     *
-     * @param timeout_ms The timeout duration to wait for the response.
-     * @param buffer The pointer to the buffer to store the response.
-     * @return int The status of the response
-     */
-    virtual int waitForResponse(unsigned long timeout_ms, String *buffer = NULL) = 0;
-    /**
-     * @brief Checks if the modem is ready to receive the AT commands.
-     *
-     * @return true
-     * @return false
-     */
-    virtual bool isReady() = 0;
+    Modem(Stream &_stream, uint8_t _resetPin, bool _activeHigh, Stream *_debugStream = nullptr);
+    void reset();
+    void send(const char *_cmd);
+    ResponseCode waitForResponse(uint32_t _timeoutMs, String *_response = nullptr);
+    int addResponseHandler(ModemUrcHandler *_handler);
+
+private:
+    Stream &m_stream;
+    Stream *m_debugStream;
+    uint8_t m_resetPin;
+    bool m_activeHigh;
+    ModemUrcHandler *m_respHandlers[MODEM_MAX_RESPONSE_HANDLERS] = {nullptr};
 };
 
 #endif
