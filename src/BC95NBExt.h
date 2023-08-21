@@ -23,9 +23,11 @@ public:
     void configDnsServerAddr(const char *primaryAddr, const char *secondaryAddr);
     void setState(MqttState state) { m_state = state; }
     MqttState getState(void) { return m_state; }
+    int subscribe(const char *topic, uint8_t QoS);
 
 private:
     Modem *m_modem;
     MqttState m_state;
+    uint16_t m_msgID;
 };
 #endif

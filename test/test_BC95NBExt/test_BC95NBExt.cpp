@@ -80,6 +80,21 @@ TEST_F(BC95NBExtTest, ProceedToReadyState_WhenServerIsConnected)
                              MqttState::READY);
 }
 
+TEST_F(BC95NBExtTest, SubscribeToMqttTopic)
+{
+    Modem *modem = modemBuilder->buildModem();
+    BC95NBExt mqttClient(modem);
+    const char *topic = "topic/subtopic";
+    uint8_t QoS = 0;
+    char expectedCmd[100];
+    sprintf(expectedCmd, "AT+QMTSUB=0,0,\"%s\",%d\r\n", topic, QoS);
+    testSupport.putRxBuffer("\r\nOK\r\n\r\n+QMTSUB: 0,0,1,0\r\n");
+
+    int retCode = mqttClient.subscribe(topic, QoS);
+    EXPECT_STREQ(testSupport.getTxBuffer().c_str(), expectedCmd);
+    EXPECT_EQ(retCode, 1);
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

@@ -2,7 +2,8 @@
 
 BC95NBExt::BC95NBExt(Modem *_modem)
     : m_modem(_modem),
-      m_state(MqttState::OPEN_HOST)
+      m_state(MqttState::OPEN_HOST),
+      m_msgID(0)
 {
 }
 
@@ -74,4 +75,21 @@ MqttState BC95NBExt::connect(const char *host, int port, const char *clientId, c
         break;
     }
     return m_state;
+}
+
+int BC95NBExt::subscribe(const char *topic, uint8_t QoS)
+{
+    char cmd[BC95_MQTT_MAX_CMD_LENGTH];
+    String response;
+    snprintf(cmd, BC95_MQTT_MAX_CMD_LENGTH, "AT+QMTSUB=0,%d,\"%s\",%d\r\n", m_msgID, topic, QoS);
+    m_modem->send(cmd);
+    m_modem->waitForResponse(1000, &response);
+    int index = response.indexOf("+QMTSUB:");
+    for (auto i{0}; i < 2; i++)
+        index = response.indexOf(",", index + 1);
+    if (index != -1)
+    {
+        return response.charAt(index + 1) - '0';
+    }
+    return -1;
 }
