@@ -48,13 +48,54 @@ class StdModem
 public:
     StdModem();
     ~StdModem();
+    /**
+     * @brief
+     *
+     * @param _modem
+     */
     void attach(Modem *_modem);
+    /**
+     * @brief
+     *
+     * @param _cmd
+     */
     void readCmd(STD_AtCmd _cmd);
+    /**
+     * @brief
+     *
+     * @param _timeoutMs
+     * @param _cmd
+     */
     void wait(uint32_t _timeoutMs, STD_AtCmd _cmd);
+    /**
+     * @brief
+     *
+     * @param _result
+     */
     void getCFUN(CFUN_t *_result);
+    /**
+     * @brief
+     *
+     * @param _result
+     */
     void getCIMI(CIMI_t *_result);
+    /**
+     * @brief
+     *
+     * @param _result
+     */
     void getCEREG(CEREG_t *_result);
+    /**
+     * @brief
+     *
+     * @param _result
+     */
     void getCGATT(CGATT_t *_result);
+    /**
+     * @brief
+     *
+     * @param _result
+     */
     void getCGPADDR(CGPADDR_t *_result);
 
 private:

@@ -3,6 +3,10 @@
 
 #include "StdModem.h"
 
+/**
+ * @brief Used to indicate the state of network communication
+ *
+ */
 enum class BC95NBState
 {
     QUERY_RF_FUNC,
@@ -23,10 +27,35 @@ class BC95NB
 public:
     BC95NB(Modem *modem);
     ~BC95NB();
+    /**
+     * @brief Get the current state of the network connection
+     *
+     * @return BC95NBState
+     */
     BC95NBState getState();
+    /**
+     * @brief Set the current state of the network connection
+     *
+     * @param _state
+     */
     void setState(BC95NBState _state);
+    /**
+     * @brief Establish a connection with the network.
+     *
+     * @return BC95NBState
+     */
     BC95NBState begin();
+    /**
+     * @brief Get IMSI of the modem
+     *
+     * @param _imsi
+     */
     void getIMSI(char *_imsi);
+    /**
+     * @brief Get the Ip Addressof the modem
+     *
+     * @param _ipAddr
+     */
     void getIpAddress(char *_ipAddr);
 
 private:
