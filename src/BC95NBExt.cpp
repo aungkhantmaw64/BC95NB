@@ -115,9 +115,8 @@ int BC95NBExt::subscribe(const char *topic, uint8_t QoS)
 {
     char cmd[BC95_MQTT_MAX_CMD_LENGTH];
     String response;
-    snprintf(cmd, BC95_MQTT_MAX_CMD_LENGTH, "AT+QMTSUB=0,1,\"%s\",%d\r\n", topic, QoS);
+    snprintf(cmd, BC95_MQTT_MAX_CMD_LENGTH, "AT+QMTSUB=0,%d,\"%s\",%d\r\n", random(1 - 65535), topic, QoS);
     m_modem->send(cmd);
-    // m_modem->send("AT+QMTSUB=0,1,\"topic/pub\",0\r\n");
     m_modem->waitForResponse(2000, &response);
     int index = response.indexOf("+QMTSUB:");
     for (auto i{0}; i < 2; i++)
@@ -141,16 +140,11 @@ int BC95NBExt::publish(const char *_topic, const char *msg, uint8_t _QoS, bool _
              "AT+QMTPUB=0,%d,%d,%d,\"%s\"\r\n",
              msgID, _QoS, _retain, _topic);
     m_modem->send(cmd);
+    char endOfCmd = 0x1A;
+    m_modem->send(msg);
+    m_modem->send(&endOfCmd);
     m_modem->waitForResponse(500, &response);
-    if (response.indexOf(">") != -1)
-    {
-        char endOfCmd = 0x1A;
-        m_modem->send(msg);
-        m_modem->send(&endOfCmd);
-        m_modem->waitForResponse(500, &response);
-        return 0;
-    }
-    return -1;
+    return 0;
 }
 
 void BC95NBExt::setMqttSubscriberCallback(MqttSubscriberCallback *callback)
