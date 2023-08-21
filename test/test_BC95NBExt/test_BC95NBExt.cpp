@@ -70,7 +70,9 @@ TEST_F(BC95NBExtTest, ConnectToServer)
     memset(expectedCmd, 0, 100);
     sprintf(expectedCmd, "AT+QMTCONN=0,\"%s\",\"%s\",\"%s\"\r\n", clientId, userName, password);
 
-    BC95NB_EXT_CMD_TEST(MqttState::CONNECT_TO_SERVER, MqttState::WAIT_CONNECT_TO_SERVER_RESPONSE, expectedCmd);
+    BC95NB_EXT_CMD_TEST(MqttState::CONNECT_TO_SERVER,
+                        MqttState::WAIT_CONNECT_TO_SERVER_RESPONSE,
+                        expectedCmd);
 }
 
 TEST_F(BC95NBExtTest, ProceedToReadyState_WhenServerIsConnected)
