@@ -140,10 +140,14 @@ int BC95NBExt::publish(const char *_topic, const char *msg, uint8_t _QoS, bool _
              "AT+QMTPUB=0,%d,%d,%d,\"%s\"\r\n",
              msgID, _QoS, _retain, _topic);
     m_modem->send(cmd);
-    char endOfCmd = 0x1A;
-    m_modem->send(msg);
-    m_modem->send(&endOfCmd);
-    m_modem->waitForResponse(500, &response);
+    m_modem->waitForResponse(200, &response);
+    if (response.indexOf(">") != -1)
+    {
+        char endOfCmd = 0x1A;
+        m_modem->send(msg);
+        m_modem->send(&endOfCmd);
+        m_modem->waitForResponse(500, &response);
+    }
     return 0;
 }
 
